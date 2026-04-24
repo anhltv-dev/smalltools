@@ -34,15 +34,18 @@ header{display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px
 .header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
 
 /* FOOTER */
-footer{display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-top:1px solid var(--bd);background:var(--sf);flex-shrink:0;height:32px;font-size:11px;color:var(--mu)}
-footer .f-left{display:flex;align-items:center;gap:10px}
-footer .f-brand{font-weight:700;color:var(--tx)}
+footer{display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-top:1px solid var(--bd);background:var(--sf);flex-shrink:0;height:36px;font-size:11px;color:var(--mu)}
+footer .f-left{display:flex;align-items:center;gap:12px}
+footer .f-brand{font-weight:700;font-size:13px;color:var(--tx);letter-spacing:.3px}
 footer .f-brand span{color:var(--ac)}
-footer .f-sep{color:var(--bd2)}
-footer .f-author{display:flex;align-items:center;gap:5px}
-footer .f-author a{color:var(--mu);text-decoration:none;transition:.15s}
-footer .f-author a:hover{color:var(--ac)}
-footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--bd2)}
+footer .f-sep{color:var(--bd2);font-size:13px}
+footer .f-contact{display:flex;align-items:center;gap:6px}
+footer .f-contact a{color:var(--mu);text-decoration:none;transition:.15s;font-weight:500}
+footer .f-contact a:hover{color:var(--ac)}
+footer .f-contact .f-dot{width:3px;height:3px;border-radius:50%;background:var(--bd2);display:inline-block;vertical-align:middle}
+footer .f-right{display:flex;align-items:center;gap:10px;font-size:10px}
+footer .f-copy{color:var(--bd2)}
+footer .f-ver{background:var(--sf3);border:1px solid var(--bd);color:var(--mu);border-radius:4px;padding:1px 7px;font-family:monospace;font-size:10px}
 
 .tab-bar{display:flex;flex-shrink:0;border-bottom:1px solid var(--bd);background:var(--sf)}
 .tab-btn{flex:1;padding:10px;border:none;background:transparent;color:var(--mu);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
@@ -1715,15 +1718,18 @@ try{
 <footer>
   <div class="f-left">
     <span class="f-brand">Print<span>Merge</span></span>
-    <span class="f-sep">|</span>
-    <span class="f-author">
-      ✉️ Tác giả: <a href="mailto:Anhltv1984@gmail.com">Anhltv1984@gmail.com</a>
+    <span class="f-sep">·</span>
+    <span class="f-contact">
+      <a href="mailto:Anhltv@woodsoft.vn">Anhltv@woodsoft.vn</a>
+      <span class="f-dot"></span>
+      <a href="https://woodsoft.vn" target="_blank" rel="noopener">woodsoft.vn</a>
     </span>
-    <span class="f-sep">|</span>
-    <span>Xuất hàng loạt thiệp mời & giấy chứng nhận</span>
+    <span class="f-sep">·</span>
+    <span style="color:var(--mu)">Công cụ xuất hàng loạt thiệp mời &amp; giấy chứng nhận</span>
   </div>
   <div class="f-right">
-    <span>© 2025 · v3.1</span>
+    <span class="f-copy">© 2025 Woodsoft</span>
+    <span class="f-ver">v3.7</span>
   </div>
 </footer>
 
