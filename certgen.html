@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>PrintMerge v3 — Thiệp mời & Giấy chứng nhận</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Kalam:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Great+Vibes&family=Satisfy&family=Lobster&family=Courgette&family=Sacramento&family=Marck+Script&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root{
+  --bg:#0d0e14;--sf:#13141c;--sf2:#1a1b27;--sf3:#21223a;
+  --bd:#242535;--bd2:#32334e;
+  --inv:#5ab4e0;--inv-dim:rgba(90,180,224,.13);--inv-bd:rgba(90,180,224,.35);
+  --cert:#a87af0;--cert-dim:rgba(168,122,240,.13);--cert-bd:rgba(168,122,240,.35);
+  --ac:#f0c060;--adim:rgba(240,192,96,.13);--ac-bd:rgba(240,192,96,.4);
+  --red:#f07878;--grn:#70d6a0;--tx:#dde0f0;--mu:#7778a0;
+  --r:6px;--font:'Be Vietnam Pro',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--tx);font-family:var(--font);font-size:13px;display:flex;flex-direction:column}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:3px}
+
+header{display:flex;align-items:center;gap:12px;padding:0 20px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0;height:48px}
+.logo-mark{width:30px;height:30px;background:linear-gradient(135deg,var(--ac),#f59030);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;box-shadow:0 2px 8px rgba(240,192,96,.3)}
+.logo-text{font-size:16px;font-weight:700;letter-spacing:.5px;color:var(--tx)}
+.logo-text span{color:var(--ac)}
+.logo-sub{font-size:11px;color:var(--mu);margin-top:1px}
+.hbadge{font-size:10px;background:var(--adim);color:var(--ac);border:1px solid var(--ac-bd);padding:2px 8px;border-radius:20px;font-family:monospace}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+/* FOOTER */
+footer{display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-top:1px solid var(--bd);background:var(--sf);flex-shrink:0;height:32px;font-size:11px;color:var(--mu)}
+footer .f-left{display:flex;align-items:center;gap:10px}
+footer .f-brand{font-weight:700;color:var(--tx)}
+footer .f-brand span{color:var(--ac)}
+footer .f-sep{color:var(--bd2)}
+footer .f-author{display:flex;align-items:center;gap:5px}
+footer .f-author a{color:var(--mu);text-decoration:none;transition:.15s}
+footer .f-author a:hover{color:var(--ac)}
+footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var(--bd2)}
+
+.tab-bar{display:flex;flex-shrink:0;border-bottom:1px solid var(--bd);background:var(--sf)}
+.tab-btn{flex:1;padding:10px;border:none;background:transparent;color:var(--mu);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;transition:.2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab-btn.inv.active{color:var(--inv);border-bottom-color:var(--inv);background:var(--inv-dim)}
+.tab-btn.cert.active{color:var(--cert);border-bottom-color:var(--cert);background:var(--cert-dim)}
+.tab-btn:hover:not(.active){color:var(--tx);background:var(--sf2)}
+
+.layout{display:flex;flex:1;overflow:hidden}
+.panel-left{width:400px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--bd);background:var(--sf)}
+.panel-right{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+
+.sec{border-bottom:1px solid var(--bd);padding:12px 14px}
+.stitle{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.stitle.inv{color:var(--inv)}.stitle.cert{color:var(--cert)}.stitle.n{color:var(--ac)}
+.snum{border-radius:50%;width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;font-weight:700}
+.snum.inv{background:var(--inv);color:#000}.snum.cert{background:var(--cert);color:#000}.snum.n{background:var(--ac);color:#000}
+
+.uz{border:1.5px dashed var(--bd2);border-radius:var(--r);padding:10px;text-align:center;cursor:pointer;color:var(--mu);font-size:11px;position:relative;transition:.2s;margin-bottom:7px}
+.uz:hover,.uz.drag{border-color:var(--ac);background:var(--adim);color:var(--ac)}
+.uz input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz .ico{font-size:16px;margin-bottom:2px;display:block}
+.uz.ok{border-color:var(--grn);border-style:solid;color:var(--grn);background:rgba(112,214,160,.07)}
+.uinfo{font-size:11px;color:var(--mu);word-break:break-all;margin-bottom:5px;font-family:monospace}
+
+.fg{display:flex;flex-direction:column;gap:3px;margin-bottom:6px}
+.fg label{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.5px}
+.fg input,.fg select,.fg textarea{background:var(--bg);border:1px solid var(--bd2);color:var(--tx);border-radius:4px;padding:5px 8px;font-size:12px;font-family:var(--font);width:100%}
+.fg textarea{resize:vertical;min-height:32px;line-height:1.4}
+.fg input[type=color]{padding:2px 4px;height:28px;cursor:pointer}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--ac)}
+.fg select option{background:var(--bg)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:5px}
+
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:var(--r);border:none;cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;transition:.15s}
+.btn-sm{padding:3px 8px;font-size:11px}
+.del-btn{background:none;border:none;color:var(--mu);cursor:pointer;padding:2px 5px;border-radius:3px;font-size:13px;flex-shrink:0}
+.del-btn:hover{color:var(--red);background:rgba(240,120,120,.15)}
+.add-btn{display:flex;align-items:center;gap:5px;width:100%;padding:7px;border:1.5px dashed var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;font-family:var(--font);font-size:12px;justify-content:center;transition:.15s;margin-top:6px}
+.add-btn.inv{color:var(--mu)}.add-btn.inv:hover{border-color:var(--inv);color:var(--inv);background:var(--inv-dim)}
+.add-btn.cert{color:var(--mu)}.add-btn.cert:hover{border-color:var(--cert);color:var(--cert);background:var(--cert-dim)}
+
+.btn-pick{font-size:11px;padding:3px 10px;font-weight:700;border-radius:5px}
+.btn-pick.idle{background:var(--sf3);color:var(--mu);border:1px solid var(--bd2)}
+.btn-pick.idle:hover{color:var(--ac);border-color:var(--ac-bd);background:var(--adim)}
+.btn-pick.live{background:rgba(240,192,96,.25);color:var(--ac);border:1px solid var(--ac-bd);animation:pulsePick 1.2s infinite}
+@keyframes pulsePick{0%,100%{box-shadow:0 0 0 0 rgba(240,192,96,.4)}50%{box-shadow:0 0 0 5px rgba(240,192,96,0)}}
+
+.exp-btn{background:linear-gradient(135deg,#f0c060,#f59030);color:#000;font-size:13px;font-weight:700;padding:9px;border-radius:7px;width:100%;justify-content:center;border:none;cursor:pointer}
+.exp-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 4px 18px rgba(240,192,96,.35)}
+.exp-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+.fcard{background:var(--sf2);border-radius:var(--r);padding:10px;margin-bottom:7px;border:1px solid var(--bd)}
+.fcard.pick-mode{border-color:var(--ac);background:rgba(240,192,96,.04)}
+.fhdr{display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.ftag{font-size:11px;font-weight:600;flex:1}
+.fnum{font-family:monospace;font-size:9px;color:var(--mu);background:var(--bd);border-radius:3px;padding:1px 5px}
+.aligns{display:flex;gap:2px}
+.ab{background:var(--bg);border:1px solid var(--bd2);color:var(--mu);padding:3px 7px;border-radius:3px;cursor:pointer;font-size:11px;transition:.1s}
+.ab.active{background:var(--adim);color:var(--ac);border-color:var(--ac-bd)}
+.cb{display:flex;align-items:center;gap:5px;cursor:pointer;font-size:11px;color:var(--mu)}
+.cb input{accent-color:var(--ac);cursor:pointer}.cb:hover{color:var(--tx)}
+.row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sep{height:1px;background:var(--bd);margin:5px 0}
+.font-prev{margin-top:3px;font-size:15px;color:var(--tx);opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tpl-hint{font-size:10px;color:var(--mu);margin-bottom:5px}
+.col-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
+.col-chip{font-size:10px;padding:2px 8px;background:var(--sf3);border:1px solid var(--bd2);border-radius:12px;cursor:pointer;color:var(--mu);font-family:monospace;transition:.15s;white-space:nowrap}
+.col-chip:hover{border-color:var(--ac-bd);color:var(--ac);background:var(--adim)}
+.pick-banner{display:none;align-items:center;justify-content:center;gap:8px;padding:6px 14px;background:rgba(240,192,96,.12);border-bottom:1px solid var(--ac-bd);color:var(--ac);font-weight:700;font-size:12px;flex-shrink:0}
+.pick-banner.on{display:flex}
+
+.toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0}
+.nav-btn{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);width:26px;height:26px;border-radius:4px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.nav-btn:hover{border-color:var(--ac);color:var(--ac)}.nav-btn:disabled{opacity:.3;cursor:not-allowed}
+.recinfo{font-family:monospace;font-size:11px;color:var(--mu);min-width:70px;text-align:center}
+.scale-row{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mu)}
+.scale-row input{width:70px;accent-color:var(--ac)}
+.preview-area{flex:1;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:16px}
+.cwrap{position:relative;display:inline-block;line-height:0}
+.cwrap.pick-cur{cursor:crosshair}
+#previewCanvas{display:block;border-radius:4px;box-shadow:0 6px 32px rgba(0,0,0,.55)}
+.coord-tip{position:absolute;bottom:-22px;left:0;font-size:10px;font-family:monospace;color:var(--ac);pointer-events:none}
+.pick-dot{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--ac);border:2px solid #fff;transform:translate(-50%,-50%);pointer-events:none;display:none;box-shadow:0 0 0 3px rgba(240,192,96,.3)}
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:12px;color:var(--mu);padding:40px;text-align:center}
+.empty-state .eico{font-size:44px;opacity:.3}
+.empty-state p{font-size:12px;max-width:300px;line-height:1.8}
+.export-bar{border-top:1px solid var(--bd);padding:12px 14px;background:var(--sf);flex-shrink:0}
+.exp-settings{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:9px}
+.prog-wrap{display:none;margin-top:8px}.prog-wrap.on{display:block}
+.prog-track{background:var(--bd);border-radius:20px;height:5px;overflow:hidden}
+.prog-fill{background:linear-gradient(90deg,var(--ac),#f59030);height:100%;border-radius:20px;transition:width .15s;width:0}
+.prog-lbl{font-size:11px;color:var(--mu);font-family:monospace;margin-top:4px;text-align:center}
+.rec-label{font-size:11px;color:var(--mu);margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">🖨️</div>
+  <div>
+    <div class="logo-text">Print<span>Merge</span></div>
+    <div class="logo-sub">Xuất hàng loạt thiệp mời & giấy chứng nhận từ template + Excel</div>
+  </div>
+  <div class="header-right">
+    <span class="hbadge">v3.1</span>
+  </div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn inv active" id="tabInv" onclick="switchTab('inv')">📝 Thiệp mời</button>
+  <button class="tab-btn cert" id="tabCert" onclick="switchTab('cert')">🏆 Giấy chứng nhận</button>
+</div>
+
+<div class="pick-banner" id="pickBanner">
+  🎯 Đang chọn vị trí — Click vào ảnh để đặt tọa độ &nbsp;|&nbsp; <kbd style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px">Esc</kbd> để huỷ
+</div>
+
+<div class="layout">
+
+  <!-- ═══ LEFT PANEL ═══ -->
+  <div class="panel-left">
+
+    <!-- STEP 1: FILES -->
+    <div class="sec">
+      <div class="stitle n"><span class="snum n">1</span> Tệp đầu vào</div>
+
+      <div class="fg" style="margin-bottom:3px"><label>Ảnh mẫu / Template (PNG, JPG)</label></div>
+      <div class="uz" id="tplZone">
+        <input type="file" accept="image/*" id="tplInput">
+        <span class="ico">🖼️</span>
+        <div>Kéo thả hoặc click — PNG/JPG đã export từ PSD/Canva</div>
+      </div>
+      <div class="uinfo" id="tplInfo"></div>
+
+      <div class="fg" style="margin-bottom:3px"><label>Danh sách (Excel .xlsx / .xls / CSV)</label></div>
+      <div class="uz" id="xlsZone">
+        <input type="file" accept=".xlsx,.xls,.csv" id="xlsInput">
+        <span class="ico">📊</span>
+        <div>File danh sách khách mời / học sinh</div>
+      </div>
+      <div class="uinfo" id="xlsInfo"></div>
+
+      <div id="photoSection" style="display:none">
+        <div class="fg" style="margin-bottom:3px"><label>Ảnh học sinh (nhiều file cùng lúc)</label></div>
+        <div class="uz" id="photoZone">
+          <input type="file" accept="image/*" multiple id="photoInput">
+          <span class="ico">👤</span>
+          <div>Tên file phải khớp cột Excel (VD: NguyenVanA_12A.jpg)</div>
+        </div>
+        <div class="uinfo" id="photoInfo"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: TEXT FIELDS -->
+    <div class="sec">
+      <div class="stitle inv" id="tfTitle"><span class="snum inv" id="tfNum">2</span> Trường văn bản</div>
+
+      <div id="colChipsArea" style="display:none">
+        <div class="tpl-hint">💡 Click vào cột để chèn vào <em>Mẫu nội dung</em>:</div>
+        <div class="col-chips" id="colChips"></div>
+        <div class="sep"></div>
+      </div>
+
+      <div id="textFieldsList"></div>
+      <button class="add-btn inv" id="addTfBtn" onclick="addTextField()">＋ Thêm trường văn bản</button>
+    </div>
+
+    <!-- STEP 3: IMAGE FIELDS (cert only) -->
+    <div class="sec" id="imgFieldsSec" style="display:none">
+      <div class="stitle cert"><span class="snum cert">3</span> Trường hình ảnh (ảnh học sinh)</div>
+      <div id="imageFieldsList"></div>
+      <button class="add-btn cert" onclick="addImageField()">＋ Thêm trường ảnh</button>
+    </div>
+
+    <!-- STEP 4/3: EXPORT -->
+    <div class="sec" style="flex:1">
+      <div class="stitle n"><span class="snum n" id="expStepNum">3</span> Tên file xuất ra</div>
+
+      <!-- Col chips for filename -->
+      <div id="fnColChipsArea" style="display:none">
+        <div class="tpl-hint">💡 Click cột để chèn vào mẫu tên file:</div>
+        <div class="col-chips" id="fnColChips"></div>
+      </div>
+
+      <div class="fg">
+        <label>Mẫu tên file — dùng {Tên_cột}, ghép nhiều cột</label>
+        <textarea id="fnTemplate" class="fn-ta" rows="2"
+          placeholder="VD: {Ghi trong thiệp trước tên}_{Họ và tên }_{Chức vụ }"
+          oninput="CS().fnTemplate=this.value;updateFnPreview()"
+          style="font-family:monospace;font-size:11px"></textarea>
+      </div>
+
+      <div class="fg">
+        <label>Tiền tố (prefix)</label>
+        <input type="text" id="filePrefix" placeholder="VD: Invitation_"
+          oninput="CS().filePrefix=this.value;updateFnPreview()">
+      </div>
+
+      <!-- Options row -->
+      <div class="row" style="margin-bottom:8px;gap:12px">
+        <label class="cb">
+          <input type="checkbox" id="chkNoAccent" checked onchange="CS().noAccent=this.checked;updateFnPreview()">
+          Bỏ dấu tiếng Việt
+        </label>
+        <label class="cb">
+          <input type="checkbox" id="chkSpaceUnderscore" checked onchange="CS().spaceUnderscore=this.checked;updateFnPreview()">
+          Thay khoảng trắng → _
+        </label>
+      </div>
+
+      <!-- Preview -->
+      <div style="background:var(--sf3);border:1px solid var(--bd2);border-radius:4px;padding:7px 9px;font-size:11px;font-family:monospace;color:var(--ac)">
+        <span style="color:var(--mu)">Preview: </span><span id="fnPreview">—</span>
+      </div>
+    </div>
+
+  </div><!-- end left panel -->
+
+  <!-- ═══ RIGHT PANEL ═══ -->
+  <div class="panel-right">
+
+    <div class="toolbar">
+      <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>‹</button>
+      <div class="recinfo" id="recInfo">— / —</div>
+      <button class="nav-btn" id="nextBtn" onclick="navigate(1)" disabled>›</button>
+      <div class="rec-label" id="recLabel"></div>
+      <div class="scale-row">
+        <span>Zoom:</span>
+        <input type="range" id="scaleRange" min="10" max="100" value="55" oninput="setScale(this.value/100)">
+        <span id="scaleLabel" style="font-family:monospace;min-width:34px">55%</span>
+      </div>
+    </div>
+
+    <div class="preview-area" id="previewArea">
+      <div class="empty-state" id="emptyState">
+        <div class="eico">🎨</div>
+        <p>Upload ảnh mẫu và file Excel để bắt đầu.<br><br>
+        Thêm trường văn bản → nhập <code style="background:var(--sf2);padding:1px 5px;border-radius:3px">{Tên_cột}</code> hoặc click chip cột → nhấn <strong>🎯 Chọn vị trí</strong> để click lên ảnh.</p>
+      </div>
+      <div class="cwrap" id="cwrap" style="display:none">
+        <canvas id="previewCanvas"></canvas>
+        <div class="pick-dot" id="pickDot"></div>
+        <div class="coord-tip" id="coordTip"></div>
+      </div>
+    </div>
+
+    <div class="export-bar">
+      <div class="exp-settings">
+        <div class="fg">
+          <label>Định dạng</label>
+          <select id="fmtSel" onchange="CS().fmt=this.value;updateFnPreview()">
+            <option value="jpeg">JPEG (file nhỏ)</option>
+            <option value="png">PNG (chất lượng cao)</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Tên file ZIP (dự phòng)</label>
+          <input type="text" id="zipName" value="output">
+        </div>
+        <div class="fg">
+          <label>Chất lượng JPEG</label>
+          <input type="range" id="qualRange" min="70" max="100" value="93" style="padding:9px 0">
+        </div>
+      </div>
+
+      <!-- Primary: Folder export (no Windows blocking) -->
+      <button class="btn exp-btn" id="expBtn" onclick="exportToFolder()" disabled
+        style="margin-bottom:7px">
+        📂 Xuất thẳng vào thư mục <span style="font-size:11px;opacity:.8;font-weight:400">(khuyên dùng — không bị Windows chặn)</span>
+      </button>
+
+      <!-- Fallback: ZIP -->
+      <button class="btn" id="expZipBtn" onclick="exportToZip()" disabled
+        style="width:100%;justify-content:center;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);font-size:12px;padding:7px">
+        🗜️ Xuất ZIP (nếu trình duyệt không hỗ trợ thư mục)
+      </button>
+
+      <div class="prog-wrap" id="progWrap">
+        <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-lbl" id="progLbl"></div>
+      </div>
+    </div>
+
+  </div><!-- end right panel -->
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  FONT CONFIG
+// ══════════════════════════════════════════════
+const FONTS = [
+  {label:'Arial',                            v:'Arial',          note:'✅ Hỗ trợ đầy đủ tiếng Việt'},
+  {label:'Times New Roman',                  v:'Times New Roman',note:'✅ Hỗ trợ đầy đủ tiếng Việt'},
+  {label:'Caveat — Viết tay tự nhiên',       v:'Caveat',         note:'✅ Tiếng Việt tốt'},
+  {label:'Kalam — Viết tay nhẹ nhàng',       v:'Kalam',          note:'✅ Tiếng Việt tốt'},
+  {label:'Dancing Script — Cursive đẹp',     v:'Dancing Script', note:'⚠️ Tiếng Việt một phần'},
+  {label:'Great Vibes — Thư pháp sang trọng',v:'Great Vibes',    note:'⚠️ Tiếng Việt một phần'},
+  {label:'Pacifico — Vui tươi tròn đều',     v:'Pacifico',       note:'⚠️ Tiếng Việt một phần'},
+  {label:'Satisfy — Script thanh lịch',      v:'Satisfy',        note:'⚠️ Tiếng Việt một phần'},
+  {label:'Courgette — Tròn mềm mại',         v:'Courgette',      note:'⚠️ Tiếng Việt một phần'},
+  {label:'Marck Script — Viết tay đậm',      v:'Marck Script',   note:'⚠️ Tiếng Việt một phần'},
+  {label:'Sacramento — Mảnh thanh thoát',    v:'Sacramento',     note:'⚠️ Tiếng Việt một phần'},
+  {label:'Lobster — Đậm nét chữ ký',         v:'Lobster',        note:'⚠️ Tiếng Việt một phần'},
+];
+
+const loadedFonts = new Set(['Arial','Times New Roman']);
+async function ensureFont(family) {
+  if (loadedFonts.has(family)) return;
+  try {
+    await document.fonts.load(`400 16px "${family}"`);
+    await document.fonts.load(`700 16px "${family}"`);
+    loadedFonts.add(family);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════
+function mkState() {
+  return {
+    templateImg:null, tW:0, tH:0,
+    records:[], cols:[],
+    textFields:[], imageFields:[],
+    photos: new Map(),
+    currentIdx:0, pickTarget:null,
+    previewScale:0.55,
+    fmt:'jpeg', filenameCol:'', filePrefix:'',
+    fnTemplate:'', noAccent:true, spaceUnderscore:true,
+  };
+}
+const STATES = {inv:mkState(), cert:mkState()};
+let activeTab = 'inv', fieldCtr = 0;
+function uid(){ return ++fieldCtr; }
+function CS(){ return STATES[activeTab]; }
+function $i(id){ return document.getElementById(id); }
+
+// ══════════════════════════════════════════════
+//  TAB SWITCH
+// ══════════════════════════════════════════════
+function switchTab(tab) {
+  cancelPick();
+  activeTab = tab;
+  const isCert = tab==='cert';
+  $i('tabInv').classList.toggle('active', !isCert);
+  $i('tabCert').classList.toggle('active', isCert);
+  $i('photoSection').style.display = isCert?'block':'none';
+  $i('imgFieldsSec').style.display  = isCert?'block':'none';
+  $i('expStepNum').textContent = isCert?'4':'3';
+
+  const tfTitle = $i('tfTitle');
+  tfTitle.className = 'stitle ' + (isCert?'cert':'inv');
+  $i('tfNum').className = 'snum ' + (isCert?'cert':'inv');
+  $i('addTfBtn').className = 'add-btn ' + (isCert?'cert':'inv');
+
+  const sc = CS().previewScale;
+  $i('scaleRange').value = Math.round(sc*100);
+  $i('scaleLabel').textContent = Math.round(sc*100)+'%';
+
+  refreshColChips();
+  renderTextFields();
+  renderImageFields();
+  refreshFNSel();
+  refreshUI();
+}
+
+// ══════════════════════════════════════════════
+//  UPLOADS
+// ══════════════════════════════════════════════
+function dragDrop(zid, iid) {
+  const zone = $i(zid);
+  zone.addEventListener('dragover', e=>{e.preventDefault();zone.classList.add('drag');});
+  zone.addEventListener('dragleave', ()=>zone.classList.remove('drag'));
+  zone.addEventListener('drop', e=>{
+    e.preventDefault(); zone.classList.remove('drag');
+    const inp=$i(iid); const dt=new DataTransfer();
+    Array.from(e.dataTransfer.files).forEach(f=>dt.items.add(f));
+    inp.files=dt.files; inp.dispatchEvent(new Event('change'));
+  });
+}
+dragDrop('tplZone','tplInput');
+dragDrop('xlsZone','xlsInput');
+dragDrop('photoZone','photoInput');
+
+$i('tplInput').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=await loadImg(URL.createObjectURL(f)).catch(()=>null);
+  if(!img){alert('Không đọc được ảnh!');return;}
+  CS().templateImg=img; CS().tW=img.naturalWidth; CS().tH=img.naturalHeight;
+  $i('tplZone').classList.add('ok');
+  $i('tplInfo').textContent=`✓ ${f.name} — ${CS().tW}×${CS().tH}px`;
+  refreshUI();
+});
+
+$i('xlsInput').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
+      if(!data.length){alert('File không có dữ liệu!');return;}
+      CS().records=data; CS().cols=Object.keys(data[0]); CS().currentIdx=0;
+      $i('xlsZone').classList.add('ok');
+      $i('xlsInfo').textContent=`✓ ${f.name} — ${data.length} dòng | Cột: ${CS().cols.join(', ')}`;
+      refreshColChips(); refreshFNSel(); refreshUI(); updateFnPreview();
+    }catch(err){alert('Lỗi: '+err.message);}
+  };
+  r.readAsArrayBuffer(f);
+});
+
+$i('photoInput').addEventListener('change', e=>{
+  const files=Array.from(e.target.files);
+  CS().photos.clear();
+  files.forEach(f=>CS().photos.set(normKey(f.name), URL.createObjectURL(f)));
+  $i('photoZone').classList.add('ok');
+  $i('photoInfo').textContent=`✓ Đã tải ${files.length} ảnh`;
+  renderCanvas();
+});
+
+// ══════════════════════════════════════════════
+//  COLUMN CHIPS
+// ══════════════════════════════════════════════
+function refreshColChips() {
+  const area=$i('colChipsArea'); const chips=$i('colChips');
+  const cols=CS().cols;
+  if(!cols.length){area.style.display='none';return;}
+  area.style.display='block';
+  chips.innerHTML=cols.map(c=>`<span class="col-chip" onclick="insertChip('${c.replace(/'/g,"\\'")}')">{${eH(c)}}</span>`).join('');
+}
+
+function insertChip(col) {
+  // find focused textarea or last textarea
+  const tas=document.querySelectorAll('.tpl-ta');
+  if(!tas.length) return;
+  let target=null;
+  for(const ta of tas){if(document.activeElement===ta){target=ta;break;}}
+  if(!target) target=tas[tas.length-1];
+  const s=target.selectionStart, e=target.selectionEnd;
+  const ins=`{${col}}`;
+  target.value=target.value.slice(0,s)+ins+target.value.slice(e);
+  target.selectionStart=target.selectionEnd=s+ins.length;
+  target.focus();
+  // update state
+  const fid=+target.dataset.fid;
+  const f=CS().textFields.find(x=>x.id===fid);
+  if(f){f.template=target.value; renderTextFields(); renderCanvas();}
+}
+
+// ══════════════════════════════════════════════
+//  TEXT FIELDS
+// ══════════════════════════════════════════════
+function addTextField(){
+  const id=uid();
+  const firstCol=CS().cols[0]||'';
+  CS().textFields.push({
+    id,
+    template: firstCol?`{${firstCol}}`:'',
+    x: Math.round(CS().tW/2)||400,
+    y: Math.round(CS().tH*0.18)||200,
+    size:48, color:'#1a5075',
+    font:'Caveat', bold:false, italic:false,
+    align:'center', baseline:'middle',
+    stroke:false, strokeColor:'#ffffff', strokeWidth:2,
+    shadow:false,
+  });
+  renderTextFields(); renderCanvas();
+}
+
+function removeTF(id){
+  CS().textFields=CS().textFields.filter(f=>f.id!==id);
+  if(CS().pickTarget?.id===id) cancelPick();
+  renderTextFields(); renderCanvas();
+}
+
+function updTF(id,key,val){
+  const f=CS().textFields.find(x=>x.id===id);
+  if(f){f[key]=val; renderCanvas();}
+}
+
+function renderTextFields(){
+  const s=CS(); const tab=activeTab;
+  $i('textFieldsList').innerHTML=s.textFields.map((f,i)=>{
+    const isPick=s.pickTarget?.id===f.id;
+    const rec=s.records[s.currentIdx]||{};
+    const previewText=evalTpl(f.template,rec)||'(chưa có dữ liệu)';
+    const tagCls=tab==='inv'?'color:var(--inv)':'color:var(--cert)';
+    return `
+    <div class="fcard${isPick?' pick-mode':''}">
+      <div class="fhdr">
+        <span class="fnum">T${i+1}</span>
+        <span class="ftag" style="${tagCls}">Trường văn bản</span>
+        <button class="btn btn-sm btn-pick ${isPick?'live':'idle'}"
+          onclick="togglePick('text',${f.id})">
+          ${isPick?'📍 Đang chọn…':'🎯 Chọn vị trí'}
+        </button>
+        <button class="del-btn" onclick="removeTF(${f.id})">✕</button>
+      </div>
+
+      <div class="fg">
+        <label>Mẫu nội dung — gõ {Tên_cột} hoặc click chip cột bên trên</label>
+        <textarea class="tpl-ta" data-fid="${f.id}" rows="2"
+          placeholder="VD: {Ghi trong thiệp trước tên} {Họ và tên }"
+          oninput="updTF(${f.id},'template',this.value);renderTextFields()"
+        >${eH(f.template)}</textarea>
+        <div style="font-size:10px;margin-top:2px">
+          <span style="color:var(--mu)">Kết quả: </span>
+          <em style="color:var(--tx)">${eH(previewText)}</em>
+        </div>
+      </div>
+
+      <div class="g4" style="margin-bottom:6px">
+        <div class="fg"><label>X (px)</label><input type="number" value="${f.x}" oninput="updTF(${f.id},'x',+this.value)"></div>
+        <div class="fg"><label>Y (px)</label><input type="number" value="${f.y}" oninput="updTF(${f.id},'y',+this.value)"></div>
+        <div class="fg"><label>Cỡ chữ</label><input type="number" value="${f.size}" min="8" oninput="updTF(${f.id},'size',+this.value)"></div>
+        <div class="fg"><label>Màu chữ</label><input type="color" value="${f.color}" oninput="updTF(${f.id},'color',this.value)"></div>
+      </div>
+
+      <div class="fg" style="margin-bottom:6px">
+        <label>Font chữ</label>
+        <select onchange="updTF(${f.id},'font',this.value);renderTextFields()">
+          ${FONTS.map(fn=>`<option value="${fn.v}" ${fn.v===f.font?'selected':''}>${fn.label} — ${fn.note}</option>`).join('')}
+        </select>
+        <div class="font-prev" style="font-family:'${f.font}',Arial;${f.bold?'font-weight:700;':''}${f.italic?'font-style:italic;':''}">
+          ${eH(previewText)}
+        </div>
+      </div>
+
+      <div class="row" style="margin-bottom:4px">
+        <div class="fg" style="flex:none;margin-bottom:0">
+          <div class="aligns">
+            <button class="ab ${f.align==='left'?'active':''}"   onclick="updTF(${f.id},'align','left');renderTextFields()">L</button>
+            <button class="ab ${f.align==='center'?'active':''}" onclick="updTF(${f.id},'align','center');renderTextFields()">C</button>
+            <button class="ab ${f.align==='right'?'active':''}"  onclick="updTF(${f.id},'align','right');renderTextFields()">R</button>
+          </div>
+        </div>
+        <label class="cb"><input type="checkbox" ${f.bold?'checked':''} onchange="updTF(${f.id},'bold',this.checked);renderTextFields()"> <b>Bold</b></label>
+        <label class="cb"><input type="checkbox" ${f.italic?'checked':''} onchange="updTF(${f.id},'italic',this.checked);renderTextFields()"> <i>Italic</i></label>
+        <label class="cb"><input type="checkbox" ${f.stroke?'checked':''} onchange="updTF(${f.id},'stroke',this.checked);renderTextFields()"> Viền</label>
+        <label class="cb"><input type="checkbox" ${f.shadow?'checked':''} onchange="updTF(${f.id},'shadow',this.checked)"> Bóng</label>
+      </div>
+      ${f.stroke?`<div class="g2" style="margin-top:4px">
+        <div class="fg"><label>Màu viền</label><input type="color" value="${f.strokeColor}" oninput="updTF(${f.id},'strokeColor',this.value)"></div>
+        <div class="fg"><label>Độ dày viền</label><input type="number" value="${f.strokeWidth}" min="1" max="30" oninput="updTF(${f.id},'strokeWidth',+this.value)"></div>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  IMAGE FIELDS
+// ══════════════════════════════════════════════
+function addImageField(){
+  CS().imageFields.push({id:uid(),col:CS().cols[0]||'',x:100,y:100,w:160,h:200,fit:'cover',circle:false});
+  renderImageFields(); renderCanvas();
+}
+function removeIF(id){
+  CS().imageFields=CS().imageFields.filter(f=>f.id!==id);
+  if(CS().pickTarget?.id===id) cancelPick();
+  renderImageFields(); renderCanvas();
+}
+function updIF(id,key,val){
+  const f=CS().imageFields.find(x=>x.id===id);
+  if(f){f[key]=val; renderCanvas();}
+}
+function renderImageFields(){
+  const s=CS();
+  $i('imageFieldsList').innerHTML=s.imageFields.map((f,i)=>{
+    const isPick=s.pickTarget?.id===f.id;
+    return `
+    <div class="fcard${isPick?' pick-mode':''}">
+      <div class="fhdr">
+        <span class="fnum">I${i+1}</span>
+        <span class="ftag" style="color:#c07af0">Trường ảnh</span>
+        <button class="btn btn-sm btn-pick ${isPick?'live':'idle'}" onclick="togglePick('img',${f.id})">
+          ${isPick?'📍 Đang chọn…':'🎯 Chọn vị trí'}
+        </button>
+        <button class="del-btn" onclick="removeIF(${f.id})">✕</button>
+      </div>
+      <div class="fg"><label>Cột chứa tên file ảnh</label>
+        <select onchange="updIF(${f.id},'col',this.value)">
+          ${s.cols.map(c=>`<option value="${eH(c)}" ${c===f.col?'selected':''}>${eH(c)}</option>`).join('')}
+        </select>
+      </div>
+      <div class="g4" style="margin-bottom:6px">
+        <div class="fg"><label>X</label><input type="number" value="${f.x}" oninput="updIF(${f.id},'x',+this.value)"></div>
+        <div class="fg"><label>Y</label><input type="number" value="${f.y}" oninput="updIF(${f.id},'y',+this.value)"></div>
+        <div class="fg"><label>Rộng</label><input type="number" value="${f.w}" oninput="updIF(${f.id},'w',+this.value)"></div>
+        <div class="fg"><label>Cao</label><input type="number" value="${f.h}" oninput="updIF(${f.id},'h',+this.value)"></div>
+      </div>
+      <div class="g2">
+        <div class="fg"><label>Fill mode</label>
+          <select onchange="updIF(${f.id},'fit',this.value)">
+            <option value="cover" ${f.fit==='cover'?'selected':''}>Cover (cắt khít)</option>
+            <option value="contain" ${f.fit==='contain'?'selected':''}>Contain (hiện đủ)</option>
+            <option value="stretch" ${f.fit==='stretch'?'selected':''}>Stretch</option>
+          </select>
+        </div>
+        <div class="fg" style="justify-content:flex-end;padding-top:16px">
+          <label class="cb"><input type="checkbox" ${f.circle?'checked':''} onchange="updIF(${f.id},'circle',this.checked);renderImageFields()"> Hình tròn</label>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  TEMPLATE EVALUATOR  (trim-insensitive key lookup)
+// ══════════════════════════════════════════════
+function evalTpl(tpl, rec) {
+  if(!tpl) return '';
+  const keys = Object.keys(rec);
+  return tpl.replace(/\{([^}]+)\}/g, (_,col)=>{
+    const want = col.trim();
+    // 1. exact match
+    if (rec[want] !== undefined) return String(rec[want]).trim();
+    // 2. trim-insensitive match (handles trailing spaces in Excel column names)
+    const found = keys.find(k => k.trim() === want);
+    if (found !== undefined) return String(rec[found]).trim();
+    // 3. case + trim insensitive
+    const ci = keys.find(k => k.trim().toLowerCase() === want.toLowerCase());
+    if (ci !== undefined) return String(rec[ci]).trim();
+    return '';
+  }).replace(/\s+/g,' ').trim();
+}
+
+// ══════════════════════════════════════════════
+//  POSITION PICKER
+// ══════════════════════════════════════════════
+function togglePick(type,id){
+  if(CS().pickTarget?.id===id){cancelPick();return;}
+  CS().pickTarget={type,id};
+  $i('cwrap').classList.add('pick-cur');
+  $i('pickBanner').classList.add('on');
+  renderTextFields(); renderImageFields();
+}
+function cancelPick(){
+  CS().pickTarget=null;
+  $i('cwrap').classList.remove('pick-cur');
+  $i('pickBanner').classList.remove('on');
+  $i('pickDot').style.display='none';
+  $i('coordTip').textContent='';
+  renderTextFields(); renderImageFields();
+}
+
+$i('previewCanvas').addEventListener('click', e=>{
+  const s=CS(); if(!s.pickTarget) return;
+  const rect=e.target.getBoundingClientRect();
+  const px=Math.round((e.clientX-rect.left)/s.previewScale);
+  const py=Math.round((e.clientY-rect.top)/s.previewScale);
+  const {type,id}=s.pickTarget;
+  if(type==='text'){const f=s.textFields.find(x=>x.id===id);if(f){f.x=px;f.y=py;}}
+  else {const f=s.imageFields.find(x=>x.id===id);if(f){f.x=px;f.y=py;}}
+  cancelPick(); renderTextFields(); renderImageFields(); renderCanvas();
+});
+
+$i('previewCanvas').addEventListener('mousemove', e=>{
+  if(!CS().pickTarget){$i('coordTip').textContent='';return;}
+  const rect=e.target.getBoundingClientRect();
+  const px=Math.round((e.clientX-rect.left)/CS().previewScale);
+  const py=Math.round((e.clientY-rect.top)/CS().previewScale);
+  $i('coordTip').textContent=`x: ${px}  y: ${py}`;
+  const dot=$i('pickDot');
+  dot.style.display='block';
+  dot.style.left=(e.clientX-rect.left)+'px';
+  dot.style.top=(e.clientY-rect.top)+'px';
+});
+$i('previewCanvas').addEventListener('mouseleave',()=>{$i('coordTip').textContent='';$i('pickDot').style.display='none';});
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') cancelPick();
+  const t=e.target.tagName;
+  if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') return;
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') navigate(-1);
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') navigate(1);
+});
+
+// ══════════════════════════════════════════════
+//  CANVAS DRAW
+// ══════════════════════════════════════════════
+let rPending=false;
+function renderCanvas(){
+  if(rPending) return; rPending=true;
+  requestAnimationFrame(async()=>{
+    rPending=false;
+    await doDraw($i('previewCanvas'), CS().records[CS().currentIdx]||{}, CS().previewScale, true);
+  });
+}
+
+async function doDraw(canvas, rec, sc, guides) {
+  const s=CS();
+  if(!s.templateImg) return;
+  canvas.width=Math.round(s.tW*sc);
+  canvas.height=Math.round(s.tH*sc);
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(s.templateImg,0,0,canvas.width,canvas.height);
+
+  // Image fields
+  for(const f of s.imageFields){
+    const url=findPhoto(String(rec[f.col]||''));
+    if(url){
+      try{const img=await loadImg(url); drawFit(ctx,img,f.x*sc,f.y*sc,f.w*sc,f.h*sc,f.fit,f.circle);}catch{}
+    } else if(guides){
+      ctx.save();
+      ctx.strokeStyle='rgba(168,122,240,.7)';ctx.setLineDash([6,3]);ctx.lineWidth=1.5;
+      ctx.strokeRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
+      ctx.fillStyle='rgba(168,122,240,.1)';ctx.fillRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
+      ctx.setLineDash([]);ctx.font=`bold ${Math.round(11*sc)}px Arial`;
+      ctx.fillStyle='rgba(168,122,240,.8)';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('Ảnh',(f.x+f.w/2)*sc,(f.y+f.h/2)*sc);
+      ctx.restore();
+    }
+  }
+
+  // Text fields
+  for(const f of s.textFields){
+    const txt=evalTpl(f.template,rec); if(!txt) continue;
+    await ensureFont(f.font);
+    const sz=Math.round(f.size*sc);
+    ctx.font=`${f.italic?'italic ':''}${f.bold?'bold ':''}${sz}px "${f.font}",Arial`;
+    ctx.textAlign=f.align; ctx.textBaseline=f.baseline;
+    if(f.shadow){ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=4*sc;ctx.shadowOffsetX=ctx.shadowOffsetY=2*sc;}
+    if(f.stroke){
+      ctx.strokeStyle=f.strokeColor;ctx.lineWidth=f.strokeWidth*sc*2;ctx.lineJoin='round';
+      ctx.strokeText(txt,f.x*sc,f.y*sc);
+    }
+    ctx.fillStyle=f.color;
+    ctx.fillText(txt,f.x*sc,f.y*sc);
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;
+  }
+
+  // Guide markers (preview only)
+  if(guides){
+    for(const f of s.textFields){
+      const isPick=s.pickTarget?.id===f.id;
+      ctx.save();
+      ctx.strokeStyle=isPick?'rgba(240,192,96,.9)':'rgba(90,180,224,.55)';
+      ctx.setLineDash([4,3]);ctx.lineWidth=1;
+      const x=f.x*sc,y=f.y*sc;
+      ctx.beginPath();ctx.moveTo(x-10,y);ctx.lineTo(x+10,y);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y-10);ctx.lineTo(x,y+10);ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font=`bold 9px Arial`;
+      ctx.fillStyle=isPick?'rgba(240,192,96,.9)':'rgba(90,180,224,.7)';
+      ctx.textAlign='left';ctx.textBaseline='top';
+      ctx.fillText(`x${f.x},y${f.y}`,x+3,y+2);
+      ctx.restore();
+    }
+  }
+}
+
+function drawFit(ctx,img,x,y,w,h,fit,circle){
+  ctx.save();
+  ctx.beginPath();
+  if(circle) ctx.arc(x+w/2,y+h/2,Math.min(w,h)/2,0,Math.PI*2);
+  else ctx.rect(x,y,w,h);
+  ctx.clip();
+  const iw=img.naturalWidth,ih=img.naturalHeight;
+  if(fit==='stretch') ctx.drawImage(img,x,y,w,h);
+  else if(fit==='contain'){const r=Math.min(w/iw,h/ih);const dw=iw*r,dh=ih*r;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);}
+  else{const r=Math.max(w/iw,h/ih);const dw=iw*r,dh=ih*r;ctx.drawImage(img,x-(dw-w)/2,y-(dh-h)/2,dw,dh);}
+  ctx.restore();
+}
+
+// ══════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════
+function loadImg(src){
+  return new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=src;});
+}
+function normKey(n){return n.toLowerCase().trim().replace(/\.[a-z0-9]{1,5}$/i,'').replace(/\s+/g,' ');}
+function findPhoto(val){
+  if(!val||!CS().photos.size) return null;
+  const key=normKey(val);
+  if(CS().photos.has(key)) return CS().photos.get(key);
+  for(const[k,v]of CS().photos){if(k.includes(key)||key.includes(k)) return v;}
+  return null;
+}
+function eH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ══════════════════════════════════════════════
+//  VIETNAMESE ACCENT REMOVAL
+// ══════════════════════════════════════════════
+const VN_MAP={
+  'à':'a','á':'a','ạ':'a','ả':'a','ã':'a',
+  'â':'a','ầ':'a','ấ':'a','ậ':'a','ẩ':'a','ẫ':'a',
+  'ă':'a','ằ':'a','ắ':'a','ặ':'a','ẳ':'a','ẵ':'a',
+  'è':'e','é':'e','ẹ':'e','ẻ':'e','ẽ':'e',
+  'ê':'e','ề':'e','ế':'e','ệ':'e','ể':'e','ễ':'e',
+  'ì':'i','í':'i','ị':'i','ỉ':'i','ĩ':'i',
+  'ò':'o','ó':'o','ọ':'o','ỏ':'o','õ':'o',
+  'ô':'o','ồ':'o','ố':'o','ộ':'o','ổ':'o','ỗ':'o',
+  'ơ':'o','ờ':'o','ớ':'o','ợ':'o','ở':'o','ỡ':'o',
+  'ù':'u','ú':'u','ụ':'u','ủ':'u','ũ':'u',
+  'ư':'u','ừ':'u','ứ':'u','ự':'u','ử':'u','ữ':'u',
+  'ỳ':'y','ý':'y','ỵ':'y','ỷ':'y','ỹ':'y','đ':'d',
+  'À':'A','Á':'A','Ạ':'A','Ả':'A','Ã':'A',
+  'Â':'A','Ầ':'A','Ấ':'A','Ậ':'A','Ẩ':'A','Ẫ':'A',
+  'Ă':'A','Ằ':'A','Ắ':'A','Ặ':'A','Ẳ':'A','Ẵ':'A',
+  'È':'E','É':'E','Ẹ':'E','Ẻ':'E','Ẽ':'E',
+  'Ê':'E','Ề':'E','Ế':'E','Ệ':'E','Ể':'E','Ễ':'E',
+  'Ì':'I','Í':'I','Ị':'I','Ỉ':'I','Ĩ':'I',
+  'Ò':'O','Ó':'O','Ọ':'O','Ỏ':'O','Õ':'O',
+  'Ô':'O','Ồ':'O','Ố':'O','Ộ':'O','Ổ':'O','Ỗ':'O',
+  'Ơ':'O','Ờ':'O','Ớ':'O','Ợ':'O','Ở':'O','Ỡ':'O',
+  'Ù':'U','Ú':'U','Ụ':'U','Ủ':'U','Ũ':'U',
+  'Ư':'U','Ừ':'U','Ứ':'U','Ự':'U','Ử':'U','Ữ':'U',
+  'Ỳ':'Y','Ý':'Y','Ỵ':'Y','Ỷ':'Y','Ỹ':'Y','Đ':'D',
+};
+function removeAccents(str){
+  return str.split('').map(c=>VN_MAP[c]||c).join('');
+}
+
+// ══════════════════════════════════════════════
+//  FILENAME BUILDER
+// ══════════════════════════════════════════════
+function buildFilename(rec, idx) {
+  const s = CS();
+  let base;
+  if (s.fnTemplate && s.fnTemplate.trim()) {
+    base = evalTpl(s.fnTemplate, rec);
+  } else {
+    base = String(idx+1).padStart(3,'0');
+  }
+  if (s.noAccent) base = removeAccents(base);
+  if (s.spaceUnderscore) base = base.replace(/ /g,'_');
+  // Remove illegal chars
+  base = base.replace(/[\/\\:*?"<>|]/g,'').replace(/_+/g,'_').replace(/^_|_$/g,'');
+  const prefix = s.filePrefix || '';
+  const pfx = s.noAccent ? removeAccents(prefix) : prefix;
+  return pfx + base;
+}
+
+function updateFnPreview() {
+  const s = CS();
+  const rec = s.records[s.currentIdx] || {};
+  const name = buildFilename(rec, s.currentIdx);
+  const ext = (s.fmt||'jpeg')==='jpeg' ? 'jpg' : 'png';
+  $i('fnPreview').textContent = name ? `${name}.${ext}` : '—';
+}
+
+function refreshFNArea() {
+  const s = CS();
+  const cols = s.cols;
+  const area = $i('fnColChipsArea');
+  if (!cols.length) { area.style.display='none'; return; }
+  area.style.display = 'block';
+  $i('fnColChips').innerHTML = cols.map(c =>
+    `<span class="col-chip" onclick="insertFnChip('${c.replace(/'/g,"\\'")}')">{${eH(c)}}</span>`
+  ).join('');
+  // Restore state to inputs
+  $i('fnTemplate').value = s.fnTemplate || '';
+  $i('filePrefix').value = s.filePrefix || '';
+  $i('chkNoAccent').checked = s.noAccent !== false;
+  $i('chkSpaceUnderscore').checked = s.spaceUnderscore !== false;
+  updateFnPreview();
+}
+
+function insertFnChip(col) {
+  const ta = $i('fnTemplate');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const ins = `{${col}}`;
+  ta.value = ta.value.slice(0,s) + ins + ta.value.slice(e);
+  ta.selectionStart = ta.selectionEnd = s + ins.length;
+  ta.focus();
+  CS().fnTemplate = ta.value;
+  updateFnPreview();
+}
+
+// ══════════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════════
+function navigate(dir){
+  const s=CS();
+  s.currentIdx=Math.max(0,Math.min(s.records.length-1,s.currentIdx+dir));
+  updateNav(); renderTextFields(); renderCanvas(); updateFnPreview();
+}
+function updateNav(){
+  const s=CS(),n=s.records.length;
+  $i('recInfo').textContent=n?`${s.currentIdx+1} / ${n}`:'— / —';
+  $i('prevBtn').disabled=s.currentIdx<=0;
+  $i('nextBtn').disabled=s.currentIdx>=n-1;
+  if(n&&s.textFields.length){
+    const rec=s.records[s.currentIdx];
+    const lbl=s.textFields.map(f=>evalTpl(f.template,rec)).filter(Boolean).join(' | ');
+    $i('recLabel').textContent=lbl?`→ ${lbl}`:'';
+  } else $i('recLabel').textContent='';
+}
+function setScale(v){CS().previewScale=v;$i('scaleLabel').textContent=Math.round(v*100)+'%';renderCanvas();}
+function refreshFNSel(){ refreshFNArea(); }
+function refreshUI(){
+  const s=CS(),ready=!!(s.templateImg&&s.records.length);
+  $i('emptyState').style.display=ready?'none':'flex';
+  $i('cwrap').style.display=ready?'inline-block':'none';
+  $i('expBtn').disabled=!ready;
+  $i('expZipBtn').disabled=!ready;
+  updateNav();
+  if(ready) renderCanvas();
+}
+
+// ══════════════════════════════════════════════
+//  EXPORT HELPERS
+// ══════════════════════════════════════════════
+function getExportParams() {
+  return {
+    fmt: $i('fmtSel').value,
+    quality: $i('qualRange').value / 100,
+    ext: $i('fmtSel').value === 'jpeg' ? 'jpg' : 'png',
+    mime: $i('fmtSel').value === 'jpeg' ? 'image/jpeg' : 'image/png',
+  };
+}
+
+function startExport() {
+  const btn = $i('expBtn');
+  const zipBtn = $i('expZipBtn');
+  btn.disabled = true; zipBtn.disabled = true;
+  $i('progWrap').classList.add('on');
+  $i('progFill').style.width = '0%';
+}
+
+function endExport(msg) {
+  const s = CS();
+  const btn = $i('expBtn'); const zipBtn = $i('expZipBtn');
+  btn.disabled = false; zipBtn.disabled = false;
+  $i('progLbl').textContent = msg;
+}
+
+async function renderRecord(canvas, rec) {
+  await doDraw(canvas, rec, 1, false);
+  const {mime, quality} = getExportParams();
+  return new Promise(r => canvas.toBlob(blob => r(blob), mime, quality));
+}
+
+function updateProgress(i, total) {
+  const pct = Math.round((i+1)/total*100);
+  $i('progFill').style.width = pct+'%';
+  $i('progLbl').textContent = `${i+1} / ${total}  (${pct}%)`;
+}
+
+// ══════════════════════════════════════════════
+//  EXPORT → FOLDER (File System Access API)
+//  Xuất thẳng vào thư mục — không bị Windows chặn
+// ══════════════════════════════════════════════
+async function exportToFolder() {
+  const s = CS();
+  if (!s.templateImg || !s.records.length) return;
+
+  if (!window.showDirectoryPicker) {
+    alert('Trình duyệt không hỗ trợ xuất thư mục.\nVui lòng dùng nút "Xuất ZIP" bên dưới,\nhoặc dùng Chrome / Edge phiên bản mới.');
+    return;
+  }
+
+  let dirHandle;
+  try {
+    dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+  } catch(e) {
+    if (e.name === 'AbortError') return; // user cancelled
+    alert('Không thể mở thư mục: ' + e.message);
+    return;
+  }
+
+  startExport();
+  const canvas = document.createElement('canvas');
+  const { ext } = getExportParams();
+  const total = s.records.length;
+  let errors = 0;
+
+  for (let i = 0; i < total; i++) {
+    const rec = s.records[i];
+    const blob = await renderRecord(canvas, rec);
+    if (!blob) { errors++; continue; }
+
+    const filename = buildFilename(rec, i) + '.' + ext;
+    try {
+      const fh = await dirHandle.getFileHandle(filename, { create: true });
+      const w = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+    } catch(e) {
+      console.error('Write error:', filename, e);
+      errors++;
+    }
+    updateProgress(i, total);
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  const ok = total - errors;
+  endExport(`✅ Hoàn tất! ${ok}/${total} file đã lưu vào thư mục.${errors?` (${errors} lỗi)`:''}`);
+}
+
+// ══════════════════════════════════════════════
+//  EXPORT → ZIP (fallback)
+// ══════════════════════════════════════════════
+async function exportToZip() {
+  const s = CS();
+  if (!s.templateImg || !s.records.length) return;
+
+  startExport();
+  const zip = new JSZip();
+  const canvas = document.createElement('canvas');
+  const { ext } = getExportParams();
+  const zipName = ($i('zipName').value || 'output').replace(/[\/\\:*?"<>|]/g,'_');
+  const total = s.records.length;
+
+  for (let i = 0; i < total; i++) {
+    const rec = s.records[i];
+    const blob = await renderRecord(canvas, rec);
+    if (!blob) continue;
+    const filename = buildFilename(rec, i) + '.' + ext;
+    zip.file(filename, blob);
+    updateProgress(i, total);
+    await new Promise(r => setTimeout(r, 0));
+  }
+
+  const zblob = await zip.generateAsync({
+    type: 'blob',
+    compression: 'STORE', // STORE = no recompression, faster + more compatible
+  });
+
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(zblob);
+  a.download = zipName + '.zip';
+  a.click();
+
+  endExport(`✅ Hoàn tất! Đã xuất ${total} file → ${zipName}.zip`);
+  $i('progLbl').innerHTML += `<br><span style="color:var(--ac)">⚠️ Trước khi giải nén: chuột phải file ZIP → Properties → tích Unblock → OK</span>`;
+}
+
+// INIT
+switchTab('inv');
+</script>
+<footer>
+  <div class="f-left">
+    <span class="f-brand">Print<span>Merge</span></span>
+    <span class="f-sep">|</span>
+    <span class="f-author">
+      ✉️ Tác giả: <a href="mailto:Anhltv1984@gmail.com">Anhltv1984@gmail.com</a>
+    </span>
+    <span class="f-sep">|</span>
+    <span>Xuất hàng loạt thiệp mời & giấy chứng nhận</span>
+  </div>
+  <div class="f-right">
+    <span>© 2025 · v3.1</span>
+  </div>
+</footer>
+
+</body>
+</html>
