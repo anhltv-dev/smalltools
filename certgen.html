@@ -8,6 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
@@ -151,6 +152,45 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
 .step-btn-s{padding:2px 8px;font-size:10px;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:3px;cursor:pointer;transition:.1s}
 .step-btn-s.active{background:var(--adim);color:var(--ac);border-color:var(--ac-bd)}
 .pos-box{background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:8px;text-align:center;margin-top:6px}
+
+/* ══ LIGHT THEME ══ */
+body.light{
+  --bg:#f4f6fb;--sf:#ffffff;--sf2:#edf0f7;--sf3:#e3e8f3;
+  --bd:#cdd4e8;--bd2:#b2bdda;
+  --inv:#2563eb;--inv-dim:rgba(37,99,235,.08);--inv-bd:rgba(37,99,235,.28);
+  --cert:#7c3aed;--cert-dim:rgba(124,58,237,.08);--cert-bd:rgba(124,58,237,.28);
+  --ac:#b45309;--adim:rgba(180,83,9,.09);--ac-bd:rgba(180,83,9,.32);
+  --red:#dc2626;--grn:#15803d;--tx:#1a1e2e;--mu:#5a6480;
+  color-scheme:light;
+}
+body.light ::-webkit-scrollbar-thumb{background:var(--bd2)}
+body.light header,body.light footer,body.light .tab-bar{border-color:var(--bd)}
+body.light .panel-left{border-color:var(--bd)}
+body.light .sec{border-color:var(--bd)}
+body.light .toolbar{border-color:var(--bd)}
+body.light .export-bar{border-color:var(--bd)}
+body.light .pick-banner{background:rgba(180,83,9,.08);border-color:var(--ac-bd);color:var(--ac)}
+body.light #previewCanvas{box-shadow:0 6px 28px rgba(0,0,0,.18)}
+body.light .fcard{box-shadow:0 1px 3px rgba(0,0,0,.07)}
+body.light .fcard.pick-mode{background:rgba(180,83,9,.04)}
+body.light .fg input,body.light .fg select,body.light .fg textarea{background:var(--sf);color:var(--tx)}
+body.light .fg input[type=color]{background:var(--sf)}
+body.light .fg input:focus,body.light .fg select:focus,body.light .fg textarea:focus{border-color:var(--ac)}
+body.light .uz:hover,body.light .uz.drag{border-color:var(--ac);background:var(--adim);color:var(--ac)}
+body.light .uz.ok{border-color:var(--grn);background:rgba(21,128,61,.06);color:var(--grn)}
+body.light .font-prev{color:var(--tx)}
+body.light .exp-btn:hover:not(:disabled){box-shadow:0 4px 18px rgba(180,83,9,.28)}
+body.light .btn-pick.live{background:rgba(180,83,9,.14)}
+body.light .nav-btn:hover{border-color:var(--ac);color:var(--ac)}
+body.light .ab.active{background:var(--adim);color:var(--ac);border-color:var(--ac-bd)}
+body.light .col-chip:hover{border-color:var(--ac-bd);color:var(--ac);background:var(--adim)}
+body.light .prog-track{background:var(--sf3)}
+body.light .empty-state .eico{opacity:.2}
+body.light code{background:var(--sf3);color:var(--tx);padding:1px 5px;border-radius:3px}
+body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-bd)}
+/* Theme toggle button */
+#themeBtn{background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:var(--font);transition:.15s}
+#themeBtn:hover{border-color:var(--ac-bd);color:var(--ac)}
 </style>
 </head>
 <body>
@@ -162,7 +202,8 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
     <div class="logo-sub">Xuất hàng loạt thiệp mời & giấy chứng nhận từ template + Excel</div>
   </div>
   <div class="header-right">
-    <span class="hbadge">v3.6</span>
+    <button id="themeBtn" onclick="toggleTheme()">☀️ Sáng</button>
+    <span class="hbadge">v3.7</span>
   </div>
 </header>
 
@@ -450,6 +491,15 @@ const FONTS = [
   {label:'Marck Script — Viết tay đậm',      v:'Marck Script',   note:'⚠️ Tiếng Việt một phần'},
   {label:'Sacramento — Mảnh thanh thoát',    v:'Sacramento',     note:'⚠️ Tiếng Việt một phần'},
   {label:'Lobster — Đậm nét chữ ký',         v:'Lobster',        note:'⚠️ Tiếng Việt một phần'},
+  // Font bằng khen / giấy khen / chứng nhận
+  {label:'── Font bằng khen / giấy khen ──', v:'Times New Roman',    note:''},
+  {label:'Playfair Display — Tiêu đề bằng khen, sang trọng',      v:'Playfair Display',   note:'✅ Tiếng Việt tốt'},
+  {label:'Lora — Nội dung giấy khen, thư pháp nhẹ nhàng',        v:'Lora',               note:'✅ Tiếng Việt tốt'},
+  {label:'Noto Serif — Chuẩn mực, hỗ trợ hoàn hảo',              v:'Noto Serif',         note:'✅ Tiếng Việt hoàn hảo'},
+  {label:'EB Garamond — Cổ điển học thuật',                        v:'EB Garamond',        note:'✅ Tiếng Việt tốt'},
+  {label:'Cormorant Garamond — Lịch sự, quý phái',                v:'Cormorant Garamond', note:'✅ Tiếng Việt tốt'},
+  {label:'Merriweather — Trang trọng, dễ đọc in báo',             v:'Merriweather',       note:'✅ Tiếng Việt tốt'},
+  {label:'Libre Baskerville — Chính thức, học thuật',              v:'Libre Baskerville',  note:'✅ Tiếng Việt tốt'},
 ];
 
 const loadedFonts = new Set(['Arial','Times New Roman']);
@@ -1641,8 +1691,26 @@ function refreshPDFUI(){
   if(ready) renderCanvas();
 }
 
+// ══════════════════════════════════════════════
+//  THEME
+// ══════════════════════════════════════════════
+function toggleTheme(){
+  const isLight=document.body.classList.toggle('light');
+  $i('themeBtn').textContent=isLight?'🌙 Tối':'☀️ Sáng';
+  try{localStorage.setItem('pm_theme',isLight?'light':'dark');}catch{}
+}
+
 // INIT
+try{
+  if(localStorage.getItem('pm_theme')==='light'){
+    document.body.classList.add('light');
+  }
+}catch{}
 switchTab('inv');
+try{
+  const isLight=document.body.classList.contains('light');
+  $i('themeBtn').textContent=isLight?'🌙 Tối':'☀️ Sáng';
+}catch{}
 </script>
 <footer>
   <div class="f-left">
