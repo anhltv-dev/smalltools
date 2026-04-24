@@ -339,8 +339,14 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
         </div>
       </div>
 
+      <div class="sec">
+        <div class="stitle n"><span class="snum n">3</span> Vùng che trắng <span style="font-size:10px;font-weight:400;color:var(--mu)">(tẩy / đè lên nội dung cũ)</span></div>
+        <div id="pdfCoverList"></div>
+        <button class="add-btn inv" style="border-color:var(--mu);color:var(--mu)" onmouseover="this.style.borderColor='#aaa';this.style.color='#ddd'" onmouseout="this.style.borderColor='var(--mu)';this.style.color='var(--mu)'" onclick="addCoverBlock()">＋ Thêm vùng che</button>
+      </div>
+
       <div class="sec" style="flex:1">
-        <div class="stitle n"><span class="snum n">3</span> Nội dung điền vào</div>
+        <div class="stitle n"><span class="snum n">4</span> Nội dung điền vào</div>
         <div id="pdfFieldsList"></div>
         <button class="add-btn inv" onclick="addPDFTextField()">＋ Thêm trường văn bản</button>
       </div>
@@ -869,6 +875,22 @@ async function doDraw(canvas, rec, sc, guides) {
   const ctx=canvas.getContext('2d');
   ctx.drawImage(s.templateImg,0,0,canvas.width,canvas.height);
 
+  // Cover blocks — white rectangles drawn first so text sits on top
+  if(activeTab==='pdf'){
+    ctx.save();
+    for(const b of (s.coverBlocks||[])){
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(b.x*sc,b.y*sc,b.w*sc,b.h*sc);
+      if(guides){
+        ctx.strokeStyle='rgba(160,160,160,.55)';
+        ctx.setLineDash([4,3]);ctx.lineWidth=1;
+        ctx.strokeRect(b.x*sc,b.y*sc,b.w*sc,b.h*sc);
+        ctx.setLineDash([]);
+      }
+    }
+    ctx.restore();
+  }
+
   // Photo (PDF mode)
   if(activeTab==='pdf' && s.photo?.img){
     const p=s.photo;
@@ -1227,6 +1249,7 @@ function mkPDFState(){
     pdfDoc:null, pdfPageNum:1, pdfTotalPages:1,
     textFields:[], imageFields:[],
     photo:null, photoNudgeStep:5,
+    coverBlocks:[],
     records:[], cols:[], currentIdx:0,
     pickTarget:null,
     previewScale:0.7,
@@ -1378,13 +1401,96 @@ function nudge(id,dx,dy){
 
 function setNudgeStep(step){
   CS().nudgeStep=step;
-  if(activeTab==='pdf') renderPDFFields();
+  if(activeTab==='pdf'){ renderPDFFields(); renderCoverBlocks(); }
   else renderTextFields();
 }
 
 function updPDFTFVal(id,key,val){
   const f=STATES.pdf.textFields.find(x=>x.id===id);
   if(f){f[key]=val; renderCanvas();}
+}
+
+// ══════════════════════════════════════════════
+//  COVER BLOCKS (white eraser rectangles)
+// ══════════════════════════════════════════════
+function addCoverBlock(){
+  const s=STATES.pdf; const id=uid();
+  // collapse last cover block
+  if(s.coverBlocks.length) s.coverBlocks[s.coverBlocks.length-1].collapsed=true;
+  s.coverBlocks.push({id, x:80, y:80, w:120, h:22, collapsed:false});
+  renderCoverBlocks(); renderCanvas();
+}
+
+function removeCoverBlock(id){
+  STATES.pdf.coverBlocks=STATES.pdf.coverBlocks.filter(b=>b.id!==id);
+  renderCoverBlocks(); renderCanvas();
+}
+
+function toggleCoverBlock(id){
+  const b=STATES.pdf.coverBlocks.find(x=>x.id===id);
+  if(b){b.collapsed=!b.collapsed; renderCoverBlocks();}
+}
+
+function updCover(id,key,val){
+  const b=STATES.pdf.coverBlocks.find(x=>x.id===id);
+  if(b){b[key]=Math.max(5,val); renderCoverBlocks(); renderCanvas();}
+}
+
+function nudgeCover(id,dx,dy){
+  const s=STATES.pdf;
+  const b=s.coverBlocks.find(x=>x.id===id);
+  if(!b) return;
+  b.x=Math.max(0,b.x+dx); b.y=Math.max(0,b.y+dy);
+  renderCoverBlocks(); renderCanvas();
+}
+
+function renderCoverBlocks(){
+  const el=$i('pdfCoverList'); if(!el) return;
+  const s=STATES.pdf; const st=s.nudgeStep;
+  el.innerHTML=(s.coverBlocks||[]).map((b,i)=>{
+    if(b.collapsed) return `
+    <div class="fcard" style="padding:7px 10px;cursor:pointer" onclick="toggleCoverBlock(${b.id})">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="fnum" style="background:#606060;flex-shrink:0">T${i+1}</span>
+        <span style="flex:1;font-size:11px;color:var(--mu);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          ${b.w}×${b.h}px &nbsp;·&nbsp; 📍${b.x},${b.y}
+        </span>
+        <span style="color:var(--mu);font-size:10px;flex-shrink:0;margin-right:2px">▼</span>
+        <button class="del-btn" onclick="event.stopPropagation();removeCoverBlock(${b.id})">✕</button>
+      </div>
+    </div>`;
+    return `
+    <div class="fcard" style="border-color:rgba(160,160,160,.4)">
+      <div class="fhdr">
+        <span class="fnum" style="background:#606060">T${i+1}</span>
+        <span class="ftag" style="flex:1;color:var(--mu)">Vùng che trắng</span>
+        <button style="background:none;border:1px solid var(--bd2);color:var(--mu);border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer" onclick="toggleCoverBlock(${b.id})">▲</button>
+        <button class="del-btn" onclick="removeCoverBlock(${b.id})">✕</button>
+      </div>
+      <div class="pos-box" style="margin-bottom:7px">
+        <div style="font-size:11px;font-family:monospace;color:var(--mu);margin-bottom:6px">
+          📍 x: <b style="color:var(--tx)">${b.x}</b> &nbsp;·&nbsp; y: <b style="color:var(--tx)">${b.y}</b>
+        </div>
+        <div class="dpad">
+          <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCover(${b.id},0,-${st})">↑</button></div>
+          <div class="dpad-row">
+            <button class="dpad-btn" onclick="nudgeCover(${b.id},-${st},0)">←</button>
+            <div class="dpad-ctr">·</div>
+            <button class="dpad-btn" onclick="nudgeCover(${b.id},${st},0)">→</button>
+          </div>
+          <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCover(${b.id},0,${st})">↓</button></div>
+        </div>
+        <div class="step-row" style="margin-top:6px">
+          <span>Bước:</span>
+          ${[1,5,10,50].map(v=>`<button class="step-btn-s${v===st?' active':''}" onclick="setNudgeStep(${v})">${v}px</button>`).join('')}
+        </div>
+      </div>
+      <div class="g2">
+        <div class="fg"><label>Rộng (px)</label><input type="number" value="${b.w}" min="5" oninput="updCover(${b.id},'w',+this.value)"></div>
+        <div class="fg"><label>Cao (px)</label><input type="number" value="${b.h}" min="5" oninput="updCover(${b.id},'h',+this.value)"></div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function togglePDFField(id){
