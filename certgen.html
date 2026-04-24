@@ -7,6 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Kalam:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Great+Vibes&family=Satisfy&family=Lobster&family=Courgette&family=Sacramento&family=Marck+Script&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{
   --bg:#0d0e14;--sf:#13141c;--sf2:#1a1b27;--sf3:#21223a;
@@ -134,6 +136,21 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
 .prog-fill{background:linear-gradient(90deg,var(--ac),#f59030);height:100%;border-radius:20px;transition:width .15s;width:0}
 .prog-lbl{font-size:11px;color:var(--mu);font-family:monospace;margin-top:4px;text-align:center}
 .rec-label{font-size:11px;color:var(--mu);margin-left:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+
+/* PDF TAB */
+.tab-btn.pdf.active{color:#e07878;border-bottom-color:#e07878;background:rgba(224,120,120,.13)}
+
+/* DPAD position controls */
+.dpad{display:flex;flex-direction:column;align-items:center;gap:3px;margin:4px 0}
+.dpad-row{display:flex;align-items:center;gap:3px}
+.dpad-btn{width:30px;height:30px;border:1px solid var(--bd2);background:var(--sf2);color:var(--tx);border-radius:4px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.1s;flex-shrink:0}
+.dpad-btn:hover{border-color:var(--ac);color:var(--ac);background:var(--adim)}
+.dpad-btn:active{transform:scale(.88)}
+.dpad-ctr{width:30px;text-align:center;font-size:11px;color:var(--bd2)}
+.step-row{display:flex;align-items:center;justify-content:center;gap:4px;font-size:11px;color:var(--mu)}
+.step-btn-s{padding:2px 8px;font-size:10px;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:3px;cursor:pointer;transition:.1s}
+.step-btn-s.active{background:var(--adim);color:var(--ac);border-color:var(--ac-bd)}
+.pos-box{background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:8px;text-align:center;margin-top:6px}
 </style>
 </head>
 <body>
@@ -145,13 +162,14 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
     <div class="logo-sub">Xuất hàng loạt thiệp mời & giấy chứng nhận từ template + Excel</div>
   </div>
   <div class="header-right">
-    <span class="hbadge">v3.1</span>
+    <span class="hbadge">v3.2</span>
   </div>
 </header>
 
 <div class="tab-bar">
   <button class="tab-btn inv active" id="tabInv" onclick="switchTab('inv')">📝 Thiệp mời</button>
   <button class="tab-btn cert" id="tabCert" onclick="switchTab('cert')">🏆 Giấy chứng nhận</button>
+  <button class="tab-btn pdf" id="tabPdf" onclick="switchTab('pdf')">📄 PDF Form</button>
 </div>
 
 <div class="pick-banner" id="pickBanner">
@@ -162,6 +180,7 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
 
   <!-- ═══ LEFT PANEL ═══ -->
   <div class="panel-left">
+    <div id="invCertPanel">
 
     <!-- STEP 1: FILES -->
     <div class="sec">
@@ -257,6 +276,37 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
       </div>
     </div>
 
+    </div><!-- end invCertPanel -->
+
+    <!-- ═══ PDF PANEL ═══ -->
+    <div id="pdfPanel" style="display:none">
+
+      <div class="sec">
+        <div class="stitle n"><span class="snum n">1</span> Tệp PDF</div>
+        <div class="uz" id="pdfZone">
+          <input type="file" accept=".pdf" id="pdfInput">
+          <span class="ico">📄</span>
+          <div>Kéo thả hoặc click — file PDF mẫu</div>
+        </div>
+        <div class="uinfo" id="pdfInfo"></div>
+        <div id="pdfPageNav" style="display:none;margin-top:6px">
+          <div class="row">
+            <span style="font-size:11px;color:var(--mu)">Trang:</span>
+            <button class="nav-btn" id="pdfPrevPage" onclick="changePDFPage(-1)" disabled>‹</button>
+            <span id="pdfPageInfo" style="font-family:monospace;font-size:11px;color:var(--mu);min-width:40px;text-align:center">1/1</span>
+            <button class="nav-btn" id="pdfNextPage" onclick="changePDFPage(1)" disabled>›</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec" style="flex:1">
+        <div class="stitle n"><span class="snum n">2</span> Nội dung điền vào</div>
+        <div id="pdfFieldsList"></div>
+        <button class="add-btn inv" onclick="addPDFTextField()">＋ Thêm trường văn bản</button>
+      </div>
+
+    </div><!-- end pdfPanel -->
+
   </div><!-- end left panel -->
 
   <!-- ═══ RIGHT PANEL ═══ -->
@@ -288,35 +338,45 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
     </div>
 
     <div class="export-bar">
-      <div class="exp-settings">
-        <div class="fg">
-          <label>Định dạng</label>
-          <select id="fmtSel" onchange="CS().fmt=this.value;updateFnPreview()">
-            <option value="jpeg">JPEG (file nhỏ)</option>
-            <option value="png">PNG (chất lượng cao)</option>
-          </select>
+
+      <!-- INV / CERT export controls -->
+      <div id="invCertExpBar">
+        <div class="exp-settings">
+          <div class="fg">
+            <label>Định dạng</label>
+            <select id="fmtSel" onchange="CS().fmt=this.value;updateFnPreview()">
+              <option value="jpeg">JPEG (file nhỏ)</option>
+              <option value="png">PNG (chất lượng cao)</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Tên file ZIP (dự phòng)</label>
+            <input type="text" id="zipName" value="output">
+          </div>
+          <div class="fg">
+            <label>Chất lượng JPEG</label>
+            <input type="range" id="qualRange" min="70" max="100" value="93" style="padding:9px 0">
+          </div>
         </div>
-        <div class="fg">
-          <label>Tên file ZIP (dự phòng)</label>
-          <input type="text" id="zipName" value="output">
-        </div>
-        <div class="fg">
-          <label>Chất lượng JPEG</label>
-          <input type="range" id="qualRange" min="70" max="100" value="93" style="padding:9px 0">
-        </div>
+        <button class="btn exp-btn" id="expBtn" onclick="exportToFolder()" disabled style="margin-bottom:7px">
+          📂 Xuất thẳng vào thư mục <span style="font-size:11px;opacity:.8;font-weight:400">(khuyên dùng — không bị Windows chặn)</span>
+        </button>
+        <button class="btn" id="expZipBtn" onclick="exportToZip()" disabled
+          style="width:100%;justify-content:center;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);font-size:12px;padding:7px">
+          🗜️ Xuất ZIP (nếu trình duyệt không hỗ trợ thư mục)
+        </button>
       </div>
 
-      <!-- Primary: Folder export (no Windows blocking) -->
-      <button class="btn exp-btn" id="expBtn" onclick="exportToFolder()" disabled
-        style="margin-bottom:7px">
-        📂 Xuất thẳng vào thư mục <span style="font-size:11px;opacity:.8;font-weight:400">(khuyên dùng — không bị Windows chặn)</span>
-      </button>
-
-      <!-- Fallback: ZIP -->
-      <button class="btn" id="expZipBtn" onclick="exportToZip()" disabled
-        style="width:100%;justify-content:center;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);font-size:12px;padding:7px">
-        🗜️ Xuất ZIP (nếu trình duyệt không hỗ trợ thư mục)
-      </button>
+      <!-- PDF export controls -->
+      <div id="pdfExpBar" style="display:none">
+        <div class="fg" style="margin-bottom:9px">
+          <label>Tên file xuất ra</label>
+          <input type="text" id="pdfFileName" value="output" placeholder="VD: phieu_dang_ky">
+        </div>
+        <button class="btn exp-btn" id="expPdfBtn" onclick="exportToPDF()" disabled>
+          📄 Xuất PDF
+        </button>
+      </div>
 
       <div class="prog-wrap" id="progWrap">
         <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
@@ -384,21 +444,25 @@ function switchTab(tab) {
   cancelPick();
   activeTab = tab;
   const isCert = tab==='cert';
-  $i('tabInv').classList.toggle('active', !isCert);
+  const isPdf  = tab==='pdf';
+  $i('tabInv').classList.toggle('active', tab==='inv');
   $i('tabCert').classList.toggle('active', isCert);
+  $i('tabPdf').classList.toggle('active', isPdf);
+  $i('invCertPanel').style.display  = isPdf?'none':'block';
+  $i('pdfPanel').style.display      = isPdf?'block':'none';
+  $i('invCertExpBar').style.display = isPdf?'none':'block';
+  $i('pdfExpBar').style.display     = isPdf?'block':'none';
+  if(isPdf){ renderPDFFields(); refreshPDFUI(); return; }
   $i('photoSection').style.display = isCert?'block':'none';
   $i('imgFieldsSec').style.display  = isCert?'block':'none';
   $i('expStepNum').textContent = isCert?'4':'3';
-
   const tfTitle = $i('tfTitle');
   tfTitle.className = 'stitle ' + (isCert?'cert':'inv');
   $i('tfNum').className = 'snum ' + (isCert?'cert':'inv');
   $i('addTfBtn').className = 'add-btn ' + (isCert?'cert':'inv');
-
   const sc = CS().previewScale;
   $i('scaleRange').value = Math.round(sc*100);
   $i('scaleLabel').textContent = Math.round(sc*100)+'%';
-
   refreshColChips();
   renderTextFields();
   renderImageFields();
@@ -741,7 +805,7 @@ async function doDraw(canvas, rec, sc, guides) {
   ctx.drawImage(s.templateImg,0,0,canvas.width,canvas.height);
 
   // Image fields
-  for(const f of s.imageFields){
+  for(const f of (s.imageFields||[])){
     const url=findPhoto(String(rec[f.col]||''));
     if(url){
       try{const img=await loadImg(url); drawFit(ctx,img,f.x*sc,f.y*sc,f.w*sc,f.h*sc,f.fit,f.circle);}catch{}
@@ -759,7 +823,8 @@ async function doDraw(canvas, rec, sc, guides) {
 
   // Text fields
   for(const f of s.textFields){
-    const txt=evalTpl(f.template,rec); if(!txt) continue;
+    const txt = activeTab==='pdf' ? (f.value||'') : evalTpl(f.template,rec);
+    if(!txt) continue;
     await ensureFont(f.font);
     const sz=Math.round(f.size*sc);
     ctx.font=`${f.italic?'italic ':''}${f.bold?'bold ':''}${sz}px "${f.font}",Arial`;
@@ -1069,6 +1134,230 @@ async function exportToZip() {
 
   endExport(`✅ Hoàn tất! Đã xuất ${total} file → ${zipName}.zip`);
   $i('progLbl').innerHTML += `<br><span style="color:var(--ac)">⚠️ Trước khi giải nén: chuột phải file ZIP → Properties → tích Unblock → OK</span>`;
+}
+
+// ══════════════════════════════════════════════
+//  PDF MODE
+// ══════════════════════════════════════════════
+const pdfjsLib = window['pdfjs-dist/build/pdf'];
+if(pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+function mkPDFState(){
+  return {
+    templateImg:null, tW:0, tH:0,
+    pdfDoc:null, pdfPageNum:1, pdfTotalPages:1,
+    textFields:[], imageFields:[],
+    records:[], cols:[], currentIdx:0,
+    pickTarget:null,
+    previewScale:0.7,
+    nudgeStep:5,
+    fmt:'pdf',
+  };
+}
+STATES.pdf = mkPDFState();
+
+// Upload
+dragDrop('pdfZone','pdfInput');
+$i('pdfInput').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  if(!pdfjsLib){alert('PDF.js chưa tải. Vui lòng F5 lại trang.');return;}
+  try{
+    const buf=await f.arrayBuffer();
+    const doc=await pdfjsLib.getDocument({data:buf}).promise;
+    STATES.pdf.pdfDoc=doc;
+    STATES.pdf.pdfTotalPages=doc.numPages;
+    STATES.pdf.pdfPageNum=1;
+    $i('pdfZone').classList.add('ok');
+    $i('pdfInfo').textContent=`✓ ${f.name} — ${doc.numPages} trang`;
+    $i('pdfPageNav').style.display=doc.numPages>1?'block':'none';
+    await renderPDFPage();
+  }catch(err){alert('Lỗi đọc PDF: '+err.message);}
+});
+
+async function renderPDFPage(){
+  const s=STATES.pdf; if(!s.pdfDoc) return;
+  const page=await s.pdfDoc.getPage(s.pdfPageNum);
+  const vp=page.getViewport({scale:2});
+  const oc=document.createElement('canvas');
+  oc.width=vp.width; oc.height=vp.height;
+  await page.render({canvasContext:oc.getContext('2d'),viewport:vp}).promise;
+  const img=await loadImg(oc.toDataURL('image/png'));
+  s.templateImg=img; s.tW=img.naturalWidth; s.tH=img.naturalHeight;
+  $i('pdfPageInfo').textContent=`${s.pdfPageNum}/${s.pdfTotalPages}`;
+  $i('pdfPrevPage').disabled=s.pdfPageNum<=1;
+  $i('pdfNextPage').disabled=s.pdfPageNum>=s.pdfTotalPages;
+  refreshPDFUI();
+}
+
+async function changePDFPage(dir){
+  const s=STATES.pdf;
+  s.pdfPageNum=Math.max(1,Math.min(s.pdfTotalPages,s.pdfPageNum+dir));
+  await renderPDFPage();
+}
+
+// Text fields
+function addPDFTextField(){
+  const s=STATES.pdf; const id=uid();
+  s.textFields.push({
+    id, label:'Trường '+(s.textFields.length+1),
+    value:'', template:'',
+    x:Math.round(s.tW/2)||400, y:Math.round(s.tH*0.5)||400,
+    size:14, color:'#000000',
+    font:'Times New Roman', bold:false, italic:false,
+    align:'left', baseline:'alphabetic',
+    stroke:false, strokeColor:'#ffffff', strokeWidth:1,
+    shadow:false,
+  });
+  renderPDFFields(); renderCanvas();
+}
+
+function removePDFTF(id){
+  STATES.pdf.textFields=STATES.pdf.textFields.filter(f=>f.id!==id);
+  if(STATES.pdf.pickTarget?.id===id) cancelPick();
+  renderPDFFields(); renderCanvas();
+}
+
+function updPDFTF(id,key,val){
+  const f=STATES.pdf.textFields.find(x=>x.id===id);
+  if(f){f[key]=val; renderPDFFields(); renderCanvas();}
+}
+
+function nudge(id,dx,dy){
+  const f=STATES.pdf.textFields.find(x=>x.id===id);
+  if(!f) return;
+  f.x=Math.max(0,f.x+dx); f.y=Math.max(0,f.y+dy);
+  renderPDFFields(); renderCanvas();
+}
+
+function setNudgeStep(step){
+  STATES.pdf.nudgeStep=step;
+  renderPDFFields();
+}
+
+function renderPDFFields(){
+  const s=STATES.pdf;
+  $i('pdfFieldsList').innerHTML=s.textFields.map((f,i)=>{
+    const isPick=s.pickTarget?.id===f.id;
+    const st=s.nudgeStep;
+    return `
+    <div class="fcard${isPick?' pick-mode':''}">
+      <div class="fhdr">
+        <span class="fnum">P${i+1}</span>
+        <input style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--bd2);color:#e07878;font-size:12px;font-weight:600;padding:1px 3px;font-family:var(--font)"
+          value="${eH(f.label)}" oninput="updPDFTF(${f.id},'label',this.value)" placeholder="Tên trường">
+        <button class="btn btn-sm btn-pick ${isPick?'live':'idle'}" onclick="togglePick('text',${f.id})">
+          ${isPick?'📍 Đang chọn…':'🎯 Chọn vị trí'}
+        </button>
+        <button class="del-btn" onclick="removePDFTF(${f.id})">✕</button>
+      </div>
+      <div class="fg">
+        <label>Nội dung điền vào</label>
+        <input type="text" value="${eH(f.value)}"
+          oninput="updPDFTF(${f.id},'value',this.value)"
+          placeholder="Nhập nội dung...">
+      </div>
+      <div class="g2" style="margin-bottom:6px">
+        <div class="fg">
+          <label>Font</label>
+          <select onchange="updPDFTF(${f.id},'font',this.value)">
+            ${FONTS.map(fn=>`<option value="${fn.v}" ${fn.v===f.font?'selected':''}>${fn.label.split('—')[0].trim()}</option>`).join('')}
+          </select>
+        </div>
+        <div style="display:flex;gap:5px;align-items:flex-end">
+          <div class="fg" style="flex:1"><label>Cỡ (px)</label><input type="number" value="${f.size}" min="6" oninput="updPDFTF(${f.id},'size',+this.value)"></div>
+          <div class="fg" style="flex:none"><label>Màu</label><input type="color" value="${f.color}" oninput="updPDFTF(${f.id},'color',this.value)" style="height:28px;width:36px;padding:2px 3px"></div>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:6px;gap:10px">
+        <label class="cb"><input type="checkbox" ${f.bold?'checked':''} onchange="updPDFTF(${f.id},'bold',this.checked);renderCanvas()"> <b>Bold</b></label>
+        <label class="cb"><input type="checkbox" ${f.italic?'checked':''} onchange="updPDFTF(${f.id},'italic',this.checked);renderCanvas()"> <i>Italic</i></label>
+        <div style="margin-left:auto" class="aligns">
+          <button class="ab ${f.align==='left'?'active':''}" onclick="updPDFTF(${f.id},'align','left')">L</button>
+          <button class="ab ${f.align==='center'?'active':''}" onclick="updPDFTF(${f.id},'align','center')">C</button>
+          <button class="ab ${f.align==='right'?'active':''}" onclick="updPDFTF(${f.id},'align','right')">R</button>
+        </div>
+      </div>
+      <div class="pos-box">
+        <div style="font-size:11px;font-family:monospace;color:var(--mu);margin-bottom:6px">
+          📍 x: <b style="color:var(--tx)">${f.x}</b> &nbsp;·&nbsp; y: <b style="color:var(--tx)">${f.y}</b>
+        </div>
+        <div class="dpad">
+          <div class="dpad-row">
+            <button class="dpad-btn" onclick="nudge(${f.id},0,-${st})" title="Lên ${st}px">↑</button>
+          </div>
+          <div class="dpad-row">
+            <button class="dpad-btn" onclick="nudge(${f.id},-${st},0)" title="Trái ${st}px">←</button>
+            <div class="dpad-ctr">·</div>
+            <button class="dpad-btn" onclick="nudge(${f.id},${st},0)" title="Phải ${st}px">→</button>
+          </div>
+          <div class="dpad-row">
+            <button class="dpad-btn" onclick="nudge(${f.id},0,${st})" title="Xuống ${st}px">↓</button>
+          </div>
+        </div>
+        <div class="step-row" style="margin-top:6px">
+          <span>Bước:</span>
+          ${[1,5,10,50].map(v=>`<button class="step-btn-s${v===st?' active':''}" onclick="setNudgeStep(${v})">${v}px</button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Export PDF
+async function exportToPDF(){
+  const s=STATES.pdf; if(!s.templateImg) return;
+  const btn=$i('expPdfBtn');
+  btn.disabled=true;
+  $i('progWrap').classList.add('on');
+  $i('progFill').style.width='0%';
+  $i('progLbl').textContent='Đang xuất PDF...';
+  try{
+    const canvas=document.createElement('canvas');
+    canvas.width=s.tW; canvas.height=s.tH;
+    const ctx=canvas.getContext('2d');
+    ctx.drawImage(s.templateImg,0,0);
+    for(const f of s.textFields){
+      if(!f.value) continue;
+      await ensureFont(f.font);
+      ctx.font=`${f.italic?'italic ':''}${f.bold?'bold ':''}${f.size}px "${f.font}",Arial`;
+      ctx.textAlign=f.align; ctx.textBaseline=f.baseline||'alphabetic';
+      if(f.shadow){ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=4;ctx.shadowOffsetX=ctx.shadowOffsetY=2;}
+      if(f.stroke){ctx.strokeStyle=f.strokeColor;ctx.lineWidth=f.strokeWidth*2;ctx.lineJoin='round';ctx.strokeText(f.value,f.x,f.y);}
+      ctx.fillStyle=f.color;
+      ctx.fillText(f.value,f.x,f.y);
+      ctx.shadowColor='transparent';ctx.shadowBlur=0;
+    }
+    const imgData=canvas.toDataURL('image/jpeg',0.95);
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({
+      orientation:s.tW>s.tH?'landscape':'portrait',
+      unit:'px',
+      format:[s.tW,s.tH],
+      hotfixes:['px_scaling'],
+    });
+    doc.addImage(imgData,'JPEG',0,0,s.tW,s.tH);
+    const fname=($i('pdfFileName').value||'output').replace(/[\/\\:*?"<>|]/g,'_');
+    doc.save(fname+'.pdf');
+    $i('progFill').style.width='100%';
+    $i('progLbl').textContent='✅ Đã xuất: '+fname+'.pdf';
+  }catch(err){
+    $i('progLbl').textContent='❌ Lỗi: '+err.message;
+    console.error(err);
+  }finally{
+    btn.disabled=false;
+  }
+}
+
+function refreshPDFUI(){
+  const s=STATES.pdf;
+  const ready=!!s.templateImg;
+  $i('emptyState').style.display=ready?'none':'flex';
+  $i('cwrap').style.display=ready?'inline-block':'none';
+  $i('expPdfBtn').disabled=!ready;
+  $i('scaleRange').value=Math.round(s.previewScale*100);
+  $i('scaleLabel').textContent=Math.round(s.previewScale*100)+'%';
+  if(ready) renderCanvas();
 }
 
 // INIT
