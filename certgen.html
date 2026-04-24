@@ -721,12 +721,14 @@ document.addEventListener('keydown', e=>{
 // ══════════════════════════════════════════════
 //  CANVAS DRAW
 // ══════════════════════════════════════════════
-let rPending=false;
+let rPending=false, rDirty=false;
 function renderCanvas(){
-  if(rPending) return; rPending=true;
+  if(rPending){ rDirty=true; return; }
+  rPending=true; rDirty=false;
   requestAnimationFrame(async()=>{
-    rPending=false;
     await doDraw($i('previewCanvas'), CS().records[CS().currentIdx]||{}, CS().previewScale, true);
+    rPending=false;
+    if(rDirty) renderCanvas();
   });
 }
 
@@ -809,7 +811,7 @@ function drawFit(ctx,img,x,y,w,h,fit,circle){
 //  HELPERS
 // ══════════════════════════════════════════════
 function loadImg(src){
-  return new Promise((res,rej)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=src;});
+  return new Promise((res,rej)=>{const i=new Image();if(!src.startsWith('blob:'))i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=src;});
 }
 function normKey(n){return n.toLowerCase().trim().replace(/\.[a-z0-9]{1,5}$/i,'').replace(/\s+/g,' ');}
 function findPhoto(val){
