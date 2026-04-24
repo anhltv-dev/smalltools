@@ -1334,9 +1334,10 @@ async function changePDFPage(dir){
 function addPDFTextField(){
   const s=STATES.pdf; const id=uid();
   const last=s.textFields[s.textFields.length-1];
+  if(last) last.collapsed=true;
   s.textFields.push({
     id, label:'Trường '+(s.textFields.length+1),
-    value:'', template:'',
+    value:'', template:'', collapsed:false,
     x:    last ? last.x                  : Math.round(s.tW/2)||400,
     y:    last ? last.y+40               : Math.round(s.tH*0.5)||400,
     size: last ? last.size               : 14,
@@ -1386,17 +1387,41 @@ function updPDFTFVal(id,key,val){
   if(f){f[key]=val; renderCanvas();}
 }
 
+function togglePDFField(id){
+  const f=STATES.pdf.textFields.find(x=>x.id===id);
+  if(f){f.collapsed=!f.collapsed; renderPDFFields();}
+}
+
 function renderPDFFields(){
   const s=STATES.pdf;
   $i('pdfFieldsList').innerHTML=s.textFields.map((f,i)=>{
     const isPick=s.pickTarget?.id===f.id;
     const st=s.nudgeStep;
+
+    // ── COLLAPSED VIEW ──
+    if(f.collapsed && !isPick){
+      return `
+      <div class="fcard" style="padding:7px 10px;cursor:pointer;border-color:${isPick?'var(--ac)':'var(--bd)'}" onclick="togglePDFField(${f.id})">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="fnum" style="flex-shrink:0">P${i+1}</span>
+          <span style="flex:1;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+            <b style="color:#e07878">${eH(f.label)}</b>${f.value?` <span style="color:var(--tx)">→ ${eH(f.value)}</span>`:''}
+            <span style="color:var(--mu)"> · ${f.font.split(' ')[0]} ${f.size}px · 📍${f.x},${f.y}</span>
+          </span>
+          <span style="color:var(--mu);font-size:10px;flex-shrink:0;margin-right:2px">▼</span>
+          <button class="del-btn" onclick="event.stopPropagation();removePDFTF(${f.id})">✕</button>
+        </div>
+      </div>`;
+    }
+
+    // ── EXPANDED VIEW ──
     return `
     <div class="fcard${isPick?' pick-mode':''}">
       <div class="fhdr">
         <span class="fnum">P${i+1}</span>
         <input style="flex:1;background:transparent;border:none;border-bottom:1px solid var(--bd2);color:#e07878;font-size:12px;font-weight:600;padding:1px 3px;font-family:var(--font)"
           value="${eH(f.label)}" oninput="updPDFTFVal(${f.id},'label',this.value)" placeholder="Tên trường">
+        <button style="background:none;border:1px solid var(--bd2);color:var(--mu);border-radius:4px;padding:2px 6px;font-size:10px;cursor:pointer" onclick="togglePDFField(${f.id})" title="Thu lại">▲</button>
         <button class="btn btn-sm btn-pick ${isPick?'live':'idle'}" onclick="togglePick('text',${f.id})">
           ${isPick?'📍 Đang chọn…':'🎯 Chọn vị trí'}
         </button>
@@ -1434,17 +1459,13 @@ function renderPDFFields(){
           📍 x: <b style="color:var(--tx)">${f.x}</b> &nbsp;·&nbsp; y: <b style="color:var(--tx)">${f.y}</b>
         </div>
         <div class="dpad">
-          <div class="dpad-row">
-            <button class="dpad-btn" onclick="nudge(${f.id},0,-${st})" title="Lên ${st}px">↑</button>
-          </div>
+          <div class="dpad-row"><button class="dpad-btn" onclick="nudge(${f.id},0,-${st})" title="Lên ${st}px">↑</button></div>
           <div class="dpad-row">
             <button class="dpad-btn" onclick="nudge(${f.id},-${st},0)" title="Trái ${st}px">←</button>
             <div class="dpad-ctr">·</div>
             <button class="dpad-btn" onclick="nudge(${f.id},${st},0)" title="Phải ${st}px">→</button>
           </div>
-          <div class="dpad-row">
-            <button class="dpad-btn" onclick="nudge(${f.id},0,${st})" title="Xuống ${st}px">↓</button>
-          </div>
+          <div class="dpad-row"><button class="dpad-btn" onclick="nudge(${f.id},0,${st})" title="Xuống ${st}px">↓</button></div>
         </div>
         <div class="step-row" style="margin-top:6px">
           <span>Bước:</span>
