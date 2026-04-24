@@ -162,7 +162,7 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
     <div class="logo-sub">Xuất hàng loạt thiệp mời & giấy chứng nhận từ template + Excel</div>
   </div>
   <div class="header-right">
-    <span class="hbadge">v3.2</span>
+    <span class="hbadge">v3.6</span>
   </div>
 </header>
 
@@ -861,9 +861,10 @@ function renderCanvas(){
   if(rPending){ rDirty=true; return; }
   rPending=true; rDirty=false;
   requestAnimationFrame(async()=>{
-    await doDraw($i('previewCanvas'), CS().records[CS().currentIdx]||{}, CS().previewScale, true);
-    rPending=false;
-    if(rDirty) renderCanvas();
+    try{
+      await doDraw($i('previewCanvas'), CS().records[CS().currentIdx]||{}, CS().previewScale, true);
+    }catch(e){ console.error('doDraw error:',e); }
+    finally{ rPending=false; if(rDirty) renderCanvas(); }
   });
 }
 
@@ -881,7 +882,7 @@ async function doDraw(canvas, rec, sc, guides) {
     for(const b of (s.coverBlocks||[])){
       ctx.fillStyle='#ffffff';
       ctx.fillRect(b.x*sc,b.y*sc,b.w*sc,b.h*sc);
-      if(guides){
+      if(guides && !b.collapsed){
         ctx.strokeStyle='rgba(160,160,160,.55)';
         ctx.setLineDash([4,3]);ctx.lineWidth=1;
         ctx.strokeRect(b.x*sc,b.y*sc,b.w*sc,b.h*sc);
@@ -1099,6 +1100,7 @@ function updateNav(){
 function setScale(v){CS().previewScale=v;$i('scaleLabel').textContent=Math.round(v*100)+'%';renderCanvas();}
 function refreshFNSel(){ refreshFNArea(); }
 function refreshUI(){
+  if(activeTab==='pdf') return;
   const s=CS(),ready=!!(s.templateImg&&s.records.length);
   $i('emptyState').style.display=ready?'none':'flex';
   $i('cwrap').style.display=ready?'inline-block':'none';
@@ -1628,6 +1630,7 @@ async function exportToPDF(){
 }
 
 function refreshPDFUI(){
+  if(activeTab!=='pdf') return;
   const s=STATES.pdf;
   const ready=!!s.templateImg;
   $i('emptyState').style.display=ready?'none':'flex';
