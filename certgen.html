@@ -194,6 +194,38 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 /* Theme toggle button */
 #themeBtn{background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:var(--font);transition:.15s}
 #themeBtn:hover{border-color:var(--ac-bd);color:var(--ac)}
+#helpBtn{background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:var(--font);transition:.15s;display:flex;align-items:center;gap:4px}
+#helpBtn:hover{border-color:var(--inv-bd);color:var(--inv)}
+
+/* Help Modal */
+.help-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
+.help-ov.on{opacity:1;pointer-events:auto}
+.help-box{background:var(--sf);border:1px solid var(--bd);border-radius:14px;width:min(720px,96vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.45);transform:translateY(12px);transition:.22s}
+.help-ov.on .help-box{transform:translateY(0)}
+.help-head{display:flex;align-items:center;padding:16px 20px;border-bottom:1px solid var(--bd);gap:10px;flex-shrink:0}
+.help-head h2{flex:1;font-size:15px;font-weight:700;color:var(--tx);margin:0}
+.help-close{background:none;border:none;color:var(--mu);cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;border-radius:5px;transition:.1s}
+.help-close:hover{background:var(--sf3);color:var(--tx)}
+.help-body{overflow-y:auto;padding:20px}
+.help-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.hcard{background:var(--sf2);border:1px solid var(--bd);border-radius:10px;padding:14px}
+.hcard-title{font-size:12px;font-weight:700;color:var(--tx);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.hcard-title span{font-size:15px}
+.hcard ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:7px}
+.hcard ul li{font-size:11.5px;color:var(--mu);line-height:1.55;padding-left:14px;position:relative}
+.hcard ul li::before{content:'›';position:absolute;left:0;color:var(--ac);font-weight:700}
+.hcard ul li b{color:var(--tx)}
+.hcard ul li code{background:var(--sf3);border:1px solid var(--bd);border-radius:3px;padding:0 4px;font-size:10.5px;font-family:monospace;color:var(--ac)}
+.help-tips{background:var(--adim);border:1px solid var(--ac-bd);border-radius:8px;padding:12px 14px;margin-bottom:20px}
+.help-tips-title{font-size:11px;font-weight:700;color:var(--ac);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.help-tips ul{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.help-tips ul li{font-size:11px;color:var(--mu);padding-left:14px;position:relative;line-height:1.5}
+.help-tips ul li::before{content:'💡';position:absolute;left:0;font-size:10px}
+.help-tips ul li b{color:var(--tx)}
+.help-foot{padding:12px 20px;border-top:1px solid var(--bd);background:var(--sf2);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;font-size:11px;color:var(--mu)}
+.help-foot a{color:var(--ac);text-decoration:none}
+.help-foot a:hover{text-decoration:underline}
+@media(max-width:560px){.help-grid{grid-template-columns:1fr}.help-tips ul{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -205,8 +237,9 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
     <div class="logo-sub">Xuất hàng loạt thiệp mời & giấy chứng nhận từ template + Excel</div>
   </div>
   <div class="header-right">
+    <button id="helpBtn" onclick="openHelp()">❓ Hướng dẫn</button>
     <button id="themeBtn" onclick="toggleTheme()">☀️ Sáng</button>
-    <span class="hbadge">v3.7</span>
+    <span class="hbadge">v3.8</span>
   </div>
 </header>
 
@@ -218,6 +251,87 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 
 <div class="pick-banner" id="pickBanner">
   🎯 Đang chọn vị trí — Click vào ảnh để đặt tọa độ &nbsp;|&nbsp; <kbd style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px">Esc</kbd> để huỷ
+</div>
+
+<!-- ══ HELP MODAL ══ -->
+<div class="help-ov" id="helpOv" onclick="if(event.target===this)closeHelp()">
+  <div class="help-box">
+    <div class="help-head">
+      <h2>❓ Hướng dẫn sử dụng PrintMerge</h2>
+      <button class="help-close" onclick="closeHelp()">✕</button>
+    </div>
+    <div class="help-body">
+
+      <!-- 3 mode cards -->
+      <div class="help-grid">
+        <div class="hcard">
+          <div class="hcard-title"><span>📝</span> Thiệp mời</div>
+          <ul>
+            <li>Upload <b>ảnh mẫu</b> PNG/JPG (từ PSD, Canva…)</li>
+            <li>Upload <b>file Excel</b> chứa danh sách khách</li>
+            <li>Nhấn <b>＋ Thêm trường</b>, gõ <code>{Tên_cột}</code> hoặc click chip cột</li>
+            <li>Nhấn <b>🎯 Chọn vị trí</b> rồi click lên ảnh để đặt tọa độ</li>
+            <li>Dùng mũi tên <b>↑↓←→</b> để tinh chỉnh từng pixel</li>
+            <li>Chỉnh font, cỡ chữ, màu sắc theo ý muốn</li>
+            <li>Nhấn <b>📂 Xuất thư mục</b> hoặc <b>🗜️ ZIP</b></li>
+          </ul>
+        </div>
+        <div class="hcard">
+          <div class="hcard-title"><span>🏆</span> Giấy chứng nhận</div>
+          <ul>
+            <li>Làm tương tự tab <b>Thiệp mời</b></li>
+            <li>Thêm <b>trường ảnh học sinh</b>: tên file ảnh phải khớp cột Excel</li>
+            <li>VD: cột Excel ghi <b>NguyenVanA</b> → file ảnh đặt tên <b>NguyenVanA.jpg</b></li>
+            <li>Upload nhiều ảnh cùng lúc ở mục <b>Ảnh học sinh</b></li>
+            <li>Chọn Fill mode: <b>Cover</b> (cắt khít) / <b>Contain</b> / <b>Stretch</b></li>
+            <li>Tích <b>Hình tròn</b> để bo tròn ảnh thẻ</li>
+          </ul>
+        </div>
+        <div class="hcard">
+          <div class="hcard-title"><span>📄</span> PDF Form</div>
+          <ul>
+            <li>Upload <b>file PDF</b> mẫu (phiếu, biểu mẫu…)</li>
+            <li>Upload <b>ảnh thẻ</b> 3×4, 4×6 (tuỳ chọn), kéo vào đúng ô</li>
+            <li>Thêm <b>vùng che trắng</b> để xoá nội dung sai rồi ghi đè</li>
+            <li>Nhấn <b>＋ Thêm trường</b>, nhập nội dung trực tiếp</li>
+            <li>Dùng <b>↑↓←→</b> và chọn bước <b>1/5/10/50px</b> để căn chỉnh</li>
+            <li>Nhấn <b>📄 Xuất PDF</b> để tải file hoàn chỉnh</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Tips -->
+      <div class="help-tips">
+        <div class="help-tips-title">Mẹo nhanh</div>
+        <ul>
+          <li><b>Phím mũi tên</b> ← → trên bàn phím: chuyển trang xem trước</li>
+          <li><b>Bước di chuyển</b> 1px để căn chỉnh pixel-perfect</li>
+          <li><b>Kéo thả</b> file trực tiếp vào vùng upload thay vì click</li>
+          <li><b>Font bằng khen</b>: Playfair Display, Lora, EB Garamond</li>
+          <li><b>Tên file xuất</b>: dùng <code>{Cột}</code> để tạo tên riêng mỗi người</li>
+          <li><b>Bỏ dấu tiếng Việt</b> trong tên file để tránh lỗi Windows</li>
+          <li><b>Nút ▲</b> thu gọn trường đã cài để thêm trường mới thuận tay</li>
+          <li><b>Trường mới</b> tự kế thừa font, màu, cỡ chữ từ trường trước</li>
+        </ul>
+      </div>
+
+      <!-- Excel format -->
+      <div class="hcard" style="margin-bottom:0">
+        <div class="hcard-title"><span>📊</span> Cấu trúc file Excel mẫu</div>
+        <ul>
+          <li>Dòng đầu là <b>tiêu đề cột</b> (tên cột = tên dùng trong <code>{Tên_cột}</code>)</li>
+          <li>Hỗ trợ định dạng: <b>.xlsx .xls .csv</b></li>
+          <li>Cột <code>__EMPTY</code> là cột trống trong Excel — bỏ qua hoặc xoá đi</li>
+          <li>Tên cột có khoảng trắng thừa vẫn hoạt động bình thường</li>
+        </ul>
+      </div>
+
+    </div>
+    <div class="help-foot">
+      <span>Miễn phí · Chạy hoàn toàn trên trình duyệt · Không upload dữ liệu lên server</span>
+      <span>Liên hệ: <a href="mailto:Anhltv@woodsoft.vn">Anhltv@woodsoft.vn</a></span>
+    </div>
+  </div>
 </div>
 
 <div class="layout">
@@ -1693,6 +1807,16 @@ function refreshPDFUI(){
   $i('scaleLabel').textContent=Math.round(s.previewScale*100)+'%';
   if(ready) renderCanvas();
 }
+
+// ══════════════════════════════════════════════
+//  HELP
+// ══════════════════════════════════════════════
+function openHelp(){ $i('helpOv').classList.add('on'); }
+function closeHelp(){ $i('helpOv').classList.remove('on'); }
+document.addEventListener('keydown', e=>{
+  if(e.key==='?' || (e.key==='F1' && !e.ctrlKey)) { e.preventDefault(); openHelp(); }
+  if(e.key==='Escape') closeHelp();
+});
 
 // ══════════════════════════════════════════════
 //  THEME
