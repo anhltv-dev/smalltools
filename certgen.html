@@ -299,8 +299,48 @@ footer .f-right{display:flex;align-items:center;gap:8px;font-size:10px;color:var
         </div>
       </div>
 
+      <div class="sec">
+        <div class="stitle n"><span class="snum n">2</span> Ảnh thẻ <span style="font-size:10px;font-weight:400;color:var(--mu)">(tuỳ chọn)</span></div>
+        <div class="uz" id="photoThePdfZone">
+          <input type="file" accept="image/*" id="photoThePdfInput">
+          <span class="ico">👤</span>
+          <div>Ảnh thẻ 3×4, 4×6... (PNG, JPG)</div>
+        </div>
+        <div class="uinfo" id="photoThePdfInfo"></div>
+        <div id="photoThePdfCtrl" style="display:none">
+          <div class="pos-box" style="margin-bottom:7px">
+            <div style="font-size:11px;font-family:monospace;color:var(--mu);margin-bottom:6px" id="photoThePdfPos">
+              📍 x: 0 &nbsp;·&nbsp; y: 0
+            </div>
+            <div class="dpad">
+              <div class="dpad-row"><button class="dpad-btn" onclick="nudgePhoto(0,-1)" title="Lên">↑</button></div>
+              <div class="dpad-row">
+                <button class="dpad-btn" onclick="nudgePhoto(-1,0)" title="Trái">←</button>
+                <div class="dpad-ctr">·</div>
+                <button class="dpad-btn" onclick="nudgePhoto(1,0)" title="Phải">→</button>
+              </div>
+              <div class="dpad-row"><button class="dpad-btn" onclick="nudgePhoto(0,1)" title="Xuống">↓</button></div>
+            </div>
+            <div class="step-row" style="margin-top:6px" id="photoStepRow">
+              <span>Bước:</span>
+              <button class="step-btn-s" onclick="setPhotoNudgeStep(1)">1px</button>
+              <button class="step-btn-s active" onclick="setPhotoNudgeStep(5)">5px</button>
+              <button class="step-btn-s" onclick="setPhotoNudgeStep(10)">10px</button>
+              <button class="step-btn-s" onclick="setPhotoNudgeStep(50)">50px</button>
+            </div>
+          </div>
+          <div class="g2" style="margin-bottom:6px">
+            <div class="fg"><label>Rộng (px)</label><input type="number" id="photoW" value="160" min="10" oninput="updPhoto('w',+this.value)"></div>
+            <div class="fg"><label>Cao (px)</label><input type="number" id="photoH" value="200" min="10" oninput="updPhoto('h',+this.value)"></div>
+          </div>
+          <label class="cb" style="margin-bottom:4px">
+            <input type="checkbox" id="photoRatio" checked> Giữ tỉ lệ ảnh gốc
+          </label>
+        </div>
+      </div>
+
       <div class="sec" style="flex:1">
-        <div class="stitle n"><span class="snum n">2</span> Nội dung điền vào</div>
+        <div class="stitle n"><span class="snum n">3</span> Nội dung điền vào</div>
         <div id="pdfFieldsList"></div>
         <button class="add-btn inv" onclick="addPDFTextField()">＋ Thêm trường văn bản</button>
       </div>
@@ -559,18 +599,25 @@ function insertChip(col) {
 //  TEXT FIELDS
 // ══════════════════════════════════════════════
 function addTextField(){
-  const id=uid();
-  const firstCol=CS().cols[0]||'';
-  CS().textFields.push({
+  const id=uid(); const s=CS();
+  const last=s.textFields[s.textFields.length-1];
+  const firstCol=s.cols[0]||'';
+  s.textFields.push({
     id,
     template: firstCol?`{${firstCol}}`:'',
-    x: Math.round(CS().tW/2)||400,
-    y: Math.round(CS().tH*0.18)||200,
-    size:48, color:'#1a5075',
-    font:'Caveat', bold:false, italic:false,
-    align:'center', baseline:'middle',
-    stroke:false, strokeColor:'#ffffff', strokeWidth:2,
-    shadow:false,
+    x:    last ? last.x                  : Math.round(s.tW/2)||400,
+    y:    last ? last.y+60               : Math.round(s.tH*0.18)||200,
+    size: last ? last.size               : 48,
+    color:last ? last.color              : '#1a5075',
+    font: last ? last.font               : 'Caveat',
+    bold: last ? last.bold               : false,
+    italic:last? last.italic             : false,
+    align:last ? last.align              : 'center',
+    baseline:last?last.baseline          : 'middle',
+    stroke:last? last.stroke             : false,
+    strokeColor:last?last.strokeColor    : '#ffffff',
+    strokeWidth:last?last.strokeWidth    : 2,
+    shadow:last? last.shadow             : false,
   });
   renderTextFields(); renderCanvas();
 }
@@ -821,6 +868,19 @@ async function doDraw(canvas, rec, sc, guides) {
   canvas.height=Math.round(s.tH*sc);
   const ctx=canvas.getContext('2d');
   ctx.drawImage(s.templateImg,0,0,canvas.width,canvas.height);
+
+  // Photo (PDF mode)
+  if(activeTab==='pdf' && s.photo?.img){
+    const p=s.photo;
+    ctx.save();
+    ctx.drawImage(p.img,p.x*sc,p.y*sc,p.w*sc,p.h*sc);
+    if(guides){
+      ctx.strokeStyle='rgba(240,192,96,.7)';ctx.setLineDash([4,3]);ctx.lineWidth=1;
+      ctx.strokeRect(p.x*sc,p.y*sc,p.w*sc,p.h*sc);
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+  }
 
   // Image fields
   for(const f of (s.imageFields||[])){
@@ -1166,6 +1226,7 @@ function mkPDFState(){
     templateImg:null, tW:0, tH:0,
     pdfDoc:null, pdfPageNum:1, pdfTotalPages:1,
     textFields:[], imageFields:[],
+    photo:null, photoNudgeStep:5,
     records:[], cols:[], currentIdx:0,
     pickTarget:null,
     previewScale:0.7,
@@ -1175,7 +1236,62 @@ function mkPDFState(){
 }
 STATES.pdf = mkPDFState();
 
-// Upload
+// Photo upload
+dragDrop('photoThePdfZone','photoThePdfInput');
+$i('photoThePdfInput').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=await loadImg(URL.createObjectURL(f)).catch(()=>null);
+  if(!img){alert('Không đọc được ảnh!');return;}
+  const s=STATES.pdf;
+  const maxDim=180;
+  const sc=Math.min(1,maxDim/img.naturalWidth,maxDim/img.naturalHeight);
+  const w=Math.round(img.naturalWidth*sc);
+  const h=Math.round(img.naturalHeight*sc);
+  s.photo={img,x:50,y:50,w,h,origW:img.naturalWidth,origH:img.naturalHeight};
+  $i('photoThePdfZone').classList.add('ok');
+  $i('photoThePdfInfo').textContent=`✓ ${f.name} — ${img.naturalWidth}×${img.naturalHeight}px`;
+  $i('photoThePdfCtrl').style.display='block';
+  $i('photoW').value=w; $i('photoH').value=h;
+  updatePhotoDisplay();
+  renderCanvas();
+});
+
+function nudgePhoto(dx,dy){
+  const s=STATES.pdf; if(!s.photo) return;
+  const step=s.photoNudgeStep;
+  s.photo.x=Math.max(0,s.photo.x+dx*step);
+  s.photo.y=Math.max(0,s.photo.y+dy*step);
+  updatePhotoDisplay(); renderCanvas();
+}
+
+function setPhotoNudgeStep(step){
+  STATES.pdf.photoNudgeStep=step;
+  document.querySelectorAll('#photoStepRow .step-btn-s').forEach(btn=>{
+    btn.classList.toggle('active',btn.textContent===step+'px');
+  });
+}
+
+function updPhoto(key,val){
+  const s=STATES.pdf; if(!s.photo) return;
+  const p=s.photo;
+  if(key==='w' && $i('photoRatio').checked){
+    p.h=Math.round(val*(p.origH/p.origW));
+    $i('photoH').value=p.h;
+  } else if(key==='h' && $i('photoRatio').checked){
+    p.w=Math.round(val*(p.origW/p.origH));
+    $i('photoW').value=p.w;
+  }
+  p[key]=Math.max(10,val);
+  updatePhotoDisplay(); renderCanvas();
+}
+
+function updatePhotoDisplay(){
+  const p=STATES.pdf.photo; if(!p) return;
+  $i('photoThePdfPos').innerHTML=`📍 x: <b style="color:var(--tx)">${p.x}</b> &nbsp;·&nbsp; y: <b style="color:var(--tx)">${p.y}</b>`;
+  $i('photoW').value=p.w; $i('photoH').value=p.h;
+}
+
+// PDF upload
 dragDrop('pdfZone','pdfInput');
 $i('pdfInput').addEventListener('change', async e=>{
   const f=e.target.files[0]; if(!f) return;
@@ -1217,15 +1333,23 @@ async function changePDFPage(dir){
 // Text fields
 function addPDFTextField(){
   const s=STATES.pdf; const id=uid();
+  const last=s.textFields[s.textFields.length-1];
   s.textFields.push({
     id, label:'Trường '+(s.textFields.length+1),
     value:'', template:'',
-    x:Math.round(s.tW/2)||400, y:Math.round(s.tH*0.5)||400,
-    size:14, color:'#000000',
-    font:'Times New Roman', bold:false, italic:false,
-    align:'left', baseline:'alphabetic',
-    stroke:false, strokeColor:'#ffffff', strokeWidth:1,
-    shadow:false,
+    x:    last ? last.x                  : Math.round(s.tW/2)||400,
+    y:    last ? last.y+40               : Math.round(s.tH*0.5)||400,
+    size: last ? last.size               : 14,
+    color:last ? last.color              : '#000000',
+    font: last ? last.font               : 'Times New Roman',
+    bold: last ? last.bold               : false,
+    italic:last? last.italic             : false,
+    align:last ? last.align              : 'left',
+    baseline:last?last.baseline          : 'alphabetic',
+    stroke:last? last.stroke             : false,
+    strokeColor:last?last.strokeColor    : '#ffffff',
+    strokeWidth:last?last.strokeWidth    : 1,
+    shadow:last? last.shadow             : false,
   });
   renderPDFFields(); renderCanvas();
 }
