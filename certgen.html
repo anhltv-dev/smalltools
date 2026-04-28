@@ -196,6 +196,13 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 #themeBtn:hover{border-color:var(--ac-bd);color:var(--ac)}
 #helpBtn{background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:var(--font);transition:.15s;display:flex;align-items:center;gap:4px}
 #helpBtn:hover{border-color:var(--inv-bd);color:var(--inv)}
+.sess-btn{background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:5px;padding:3px 10px;cursor:pointer;font-size:11px;font-family:var(--font);transition:.15s;display:flex;align-items:center;gap:4px}
+.sess-btn:hover{border-color:var(--ac-bd);color:var(--ac)}
+.sess-btn.save:hover{border-color:rgba(112,214,160,.55);color:var(--grn)}
+.sess-btn:disabled{opacity:.5;cursor:not-allowed}
+/* Toast notification */
+.toast{position:fixed;bottom:56px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--sf);border:1px solid var(--bd2);border-radius:8px;padding:10px 20px;font-size:12px;color:var(--tx);box-shadow:0 6px 28px rgba(0,0,0,.45);z-index:9999;opacity:0;pointer-events:none;transition:.25s;max-width:500px;text-align:center;white-space:pre-line}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* Help Modal */
 .help-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
@@ -226,6 +233,132 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 .help-foot a{color:var(--ac);text-decoration:none}
 .help-foot a:hover{text-decoration:underline}
 @media(max-width:560px){.help-grid{grid-template-columns:1fr}.help-tips ul{grid-template-columns:1fr}}
+
+/* Folder upload */
+.folder-tab-bar{display:flex;gap:0;margin-bottom:7px;border:1px solid var(--bd2);border-radius:5px;overflow:hidden}
+.folder-tab{flex:1;padding:5px 8px;border:none;background:var(--sf2);color:var(--mu);font-size:11px;font-family:var(--font);cursor:pointer;transition:.15s;font-weight:600}
+.folder-tab.active{background:var(--cert-dim);color:var(--cert)}
+.match-stats{font-size:11px;color:var(--mu);background:var(--sf2);border:1px solid var(--bd);border-radius:5px;padding:6px 9px;margin-top:5px}
+.match-ok{color:var(--grn);font-weight:700}
+.match-miss{color:var(--red);font-weight:700}
+.match-list{margin-top:5px;max-height:80px;overflow-y:auto;font-size:10px;font-family:monospace;line-height:1.6}
+.match-list span{display:block}
+/* Canvas handles */
+#previewCanvas.crop-cur{cursor:crosshair}
+#previewCanvas.move-cur{cursor:move}
+#previewCanvas.resize-nw-cur,#previewCanvas.resize-se-cur{cursor:nwse-resize}
+#previewCanvas.resize-ne-cur,#previewCanvas.resize-sw-cur{cursor:nesw-resize}
+#previewCanvas.resize-n-cur,#previewCanvas.resize-s-cur{cursor:ns-resize}
+#previewCanvas.resize-e-cur,#previewCanvas.resize-w-cur{cursor:ew-resize}
+/* Crop mode indicator on image field card */
+.crop-active-badge{font-size:10px;background:rgba(168,122,240,.2);color:#c07af0;border:1px solid rgba(168,122,240,.5);border-radius:3px;padding:1px 6px;animation:pulsePick 1.2s infinite}
+/* Cert info bar */
+.cert-bar{display:none;flex-shrink:0;padding:6px 14px;background:var(--sf2);border-bottom:1px solid var(--bd);align-items:center;gap:8px;flex-wrap:wrap}
+.cert-bar.on{display:flex}
+.cert-bar-section{display:flex;align-items:center;gap:6px;flex:1;min-width:0;overflow:hidden}
+.cert-name-pill{background:var(--cert-dim);color:var(--cert);border:1px solid var(--cert-bd);border-radius:20px;padding:3px 11px;font-weight:700;font-size:12px;white-space:nowrap;max-width:220px;overflow:hidden;text-overflow:ellipsis;flex-shrink:0}
+.cert-arrow{color:var(--mu);font-size:13px;flex-shrink:0}
+.cert-photo-pill{background:var(--sf3);color:var(--mu);border:1px solid var(--bd2);border-radius:20px;padding:3px 10px;font-size:11px;font-family:monospace;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+.cert-photo-pill.ok{border-color:rgba(112,214,160,.6);color:var(--grn);background:rgba(112,214,160,.08)}
+.cert-photo-pill.miss{border-color:rgba(240,120,120,.5);color:var(--red);background:rgba(240,120,120,.07)}
+.cert-badge-crop{background:rgba(168,122,240,.18);color:#c07af0;border:1px solid rgba(168,122,240,.45);border-radius:20px;padding:2px 8px;font-size:10px;white-space:nowrap;flex-shrink:0}
+.cert-bar-actions{display:flex;align-items:center;gap:5px;flex-shrink:0}
+/* Image field card slim */
+.if-match-row{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--bg);border:1px solid var(--bd);border-radius:5px;margin-bottom:6px;font-size:11px;min-width:0;overflow:hidden}
+.if-match-row .im-name{color:var(--cert);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px}
+.if-match-row .im-arrow{color:var(--mu);flex-shrink:0}
+.if-match-row .im-file{font-family:monospace;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.if-match-row .im-file.ok{color:var(--grn)}
+.if-match-row .im-file.miss{color:var(--red)}
+.fcard.crop-mode{border-color:rgba(168,122,240,.55);background:rgba(168,122,240,.04)}
+body.light .fcard.crop-mode{background:rgba(124,58,237,.04)}
+body.light .cert-bar{border-color:var(--bd)}
+body.light .cert-photo-pill{background:var(--sf3);color:var(--mu)}
+body.light .if-match-row{background:var(--sf)}
+/* ── FULLSCREEN MATCH MODAL ── */
+.match-fs-ov{position:fixed;inset:0;z-index:850;background:var(--bg);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:.15s}
+.match-fs-ov.on{opacity:1;pointer-events:auto}
+.match-fs-hdr{display:flex;align-items:center;gap:10px;padding:0 18px;height:50px;border-bottom:1px solid var(--bd);background:var(--sf);flex-shrink:0}
+.match-fs-hdr-title{font-size:14px;font-weight:700;color:var(--cert)}
+.match-fs-body{flex:1;display:flex;overflow:hidden;min-height:0}
+.match-fs-list{width:280px;flex-shrink:0;overflow-y:auto;border-right:1px solid var(--bd);background:var(--sf2)}
+.mfl-item{display:flex;align-items:center;gap:8px;padding:6px 10px 6px 8px;cursor:pointer;border-bottom:1px solid var(--bd);transition:.1s;min-width:0;border-left:3px solid transparent}
+.mfl-item:hover{background:var(--sf3)}
+.mfl-item.active{background:var(--cert-dim);border-left-color:var(--cert)}
+.mfl-idx{color:var(--mu);font-family:monospace;font-size:10px;width:20px;flex-shrink:0;text-align:right}
+.mfl-thumb{width:38px;height:38px;object-fit:cover;border-radius:4px;border:1px solid var(--bd2);flex-shrink:0}
+.mfl-ph{width:38px;height:38px;background:var(--sf3);border:1.5px dashed var(--bd2);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mfl-info{flex:1;min-width:0}
+.mfl-name{font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx)}
+.mfl-fname{font-size:9.5px;color:var(--mu);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.mfl-ok{font-size:13px;flex-shrink:0}
+.match-fs-prev{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 32px;gap:14px;overflow-y:auto;background:var(--bg);position:relative}
+.mfp-photo{max-width:min(480px,100%);width:auto;max-height:58vh;object-fit:contain;border-radius:10px;box-shadow:0 10px 44px rgba(0,0,0,.5);display:block;cursor:zoom-in;transition:.15s}
+.mfp-photo:hover{transform:scale(1.01);box-shadow:0 14px 56px rgba(0,0,0,.6)}
+.mfp-name{font-size:26px;font-weight:700;color:var(--tx);text-align:center}
+.mfp-no{font-size:12px;color:var(--mu);font-family:monospace;margin-bottom:2px}
+.mfp-fname{font-size:12px;color:var(--mu);font-family:monospace;text-align:center;max-width:380px;word-break:break-all}
+.mfp-ph{width:280px;height:320px;background:var(--sf2);border:2px dashed var(--bd2);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.mfp-navrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+.mfp-nav{background:var(--sf2);border:1px solid var(--bd2);color:var(--tx);width:38px;height:38px;border-radius:7px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.1s;flex-shrink:0}
+.mfp-nav:hover:not(:disabled){border-color:var(--cert-bd);color:var(--cert);background:var(--cert-dim)}
+.mfp-nav:disabled{opacity:.3;cursor:not-allowed}
+.mfp-progress{font-size:12px;color:var(--mu);font-family:monospace;min-width:56px;text-align:center}
+.mfp-change{background:var(--cert-dim);border:1px solid var(--cert-bd);color:var(--cert);border-radius:7px;padding:7px 18px;cursor:pointer;font-size:13px;font-weight:700;transition:.15s}
+.mfp-change:hover{background:var(--cert);color:#fff}
+.mfp-clear{background:none;border:1px solid var(--bd2);color:var(--mu);border-radius:7px;padding:7px 12px;cursor:pointer;font-size:12px;transition:.1s}
+.mfp-clear:hover{border-color:var(--red);color:var(--red)}
+.match-fs-open-btn{width:100%;padding:8px;border:1.5px dashed var(--cert-bd);border-radius:6px;background:var(--cert-dim);color:var(--cert);font-size:12px;font-weight:700;cursor:pointer;transition:.15s;margin-bottom:8px;font-family:var(--font)}
+.match-fs-open-btn:hover{background:var(--cert);color:#fff}
+/* Zoom overlay */
+.img-zoom-ov{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;cursor:zoom-out;opacity:0;pointer-events:none;transition:.15s}
+.img-zoom-ov.on{opacity:1;pointer-events:auto}
+.img-zoom-ov img{max-width:95vw;max-height:95vh;object-fit:contain;border-radius:6px;box-shadow:0 0 80px rgba(0,0,0,.7)}
+/* ── MATCH TABLE ── */
+.match-sec-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.match-count-badge{font-size:10px;padding:2px 8px;border-radius:20px;background:var(--sf3);border:1px solid var(--bd2);color:var(--mu);font-family:monospace;white-space:nowrap}
+.match-count-badge.full{border-color:rgba(112,214,160,.5);color:var(--grn);background:rgba(112,214,160,.08)}
+.match-table{width:100%;border-collapse:collapse;font-size:11px}
+.match-table th{text-align:left;padding:4px 6px;background:var(--sf3);color:var(--mu);font-size:10px;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--bd2);position:sticky;top:0;z-index:1}
+.match-table td{padding:3px 4px;border-bottom:1px solid var(--bd);vertical-align:middle}
+.match-table tr:hover td{background:var(--sf2)}
+.match-table tr.current-row td{background:var(--cert-dim)}
+.mt-idx{color:var(--mu);font-family:monospace;font-size:10px;width:22px;text-align:right}
+.mt-name{font-weight:600;color:var(--tx);max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mt-photo{cursor:pointer;display:flex;align-items:center;gap:5px;padding:2px 5px;border-radius:4px;transition:.15s;border:1px solid transparent}
+.mt-photo:hover{border-color:var(--cert-bd);background:var(--cert-dim)}
+.mt-thumb{width:28px;height:28px;object-fit:cover;border-radius:3px;flex-shrink:0;border:1px solid var(--bd2)}
+.mt-fname{color:var(--grn);font-family:monospace;font-size:10px;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mt-empty{color:var(--mu);font-size:10px;font-style:italic;padding:4px 6px;border:1.5px dashed var(--bd2);border-radius:4px;cursor:pointer;transition:.15s;display:inline-block}
+.mt-empty:hover{border-color:var(--cert-bd);color:var(--cert)}
+.mt-clear{background:none;border:none;color:var(--mu);cursor:pointer;padding:1px 4px;border-radius:3px;font-size:11px;flex-shrink:0;line-height:1}
+.mt-clear:hover{color:var(--red);background:rgba(240,120,120,.12)}
+.match-scroll{max-height:340px;overflow-y:auto;border:1px solid var(--bd2);border-radius:5px}
+/* ── PHOTO SELECTOR OVERLAY ── */
+.psel-ov{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:900;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.18s}
+.psel-ov.on{opacity:1;pointer-events:auto}
+.psel-box{background:var(--sf);border:1px solid var(--bd);border-radius:12px;width:min(680px,95vw);max-height:80vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);transform:translateY(10px);transition:.2s}
+.psel-ov.on .psel-box{transform:translateY(0)}
+.psel-head{display:flex;align-items:center;padding:12px 16px;border-bottom:1px solid var(--bd);gap:8px;flex-shrink:0}
+.psel-head h3{flex:1;font-size:13px;font-weight:700;color:var(--tx);margin:0}
+.psel-close{background:none;border:none;color:var(--mu);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;border-radius:4px}
+.psel-close:hover{background:var(--sf3);color:var(--tx)}
+.psel-search{margin:8px 12px 4px;position:relative;flex-shrink:0}
+.psel-search input{width:100%;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);border-radius:5px;padding:5px 10px 5px 28px;font-size:11px;font-family:var(--font)}
+.psel-search input:focus{outline:none;border-color:var(--cert-bd)}
+.psel-search::before{content:'🔍';position:absolute;left:8px;top:50%;transform:translateY(-50%);font-size:11px;pointer-events:none}
+.psel-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;padding:10px 12px 12px;overflow-y:auto}
+.psel-item{border:1.5px solid var(--bd2);border-radius:7px;padding:5px;cursor:pointer;transition:.15s;text-align:center;background:var(--sf2);position:relative}
+.psel-item:hover{border-color:var(--cert-bd);background:var(--cert-dim)}
+.psel-item.assigned{opacity:.5}
+.psel-item.selected{border-color:var(--cert);box-shadow:0 0 0 2px var(--cert-dim)}
+.psel-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block;margin-bottom:3px}
+.psel-name{font-size:9px;color:var(--mu);font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.psel-assigned-badge{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;font-size:8px;border-radius:3px;padding:1px 3px;line-height:1.2;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* ── D-PAD CROP ── */
+.crop-dpad-wrap{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;margin-top:6px}
+.crop-dpad-title{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.crop-offset-label{font-family:monospace;font-size:10px;color:var(--cert)}
 </style>
 </head>
 <body>
@@ -237,9 +370,12 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
     <div class="logo-sub">Xuất hàng loạt thiệp mời & giấy chứng nhận từ template + Excel</div>
   </div>
   <div class="header-right">
+    <button class="sess-btn save" id="saveSessBtn" onclick="saveSession()" title="Lưu template, dữ liệu, vị trí, ghép ảnh ra file .pmSession để làm tiếp sau">💾 Lưu phiên</button>
+    <button class="sess-btn" onclick="$i('sessionFileInput').click()" title="Mở file .pmSession đã lưu để làm tiếp">📂 Mở phiên</button>
+    <input type="file" id="sessionFileInput" accept=".pmSession,.json" style="display:none" onchange="loadSessionFile(this)">
     <button id="helpBtn" onclick="openHelp()">❓ Hướng dẫn</button>
     <button id="themeBtn" onclick="toggleTheme()">☀️ Sáng</button>
-    <span class="hbadge">v3.8</span>
+    <span class="hbadge">v3.9</span>
   </div>
 </header>
 
@@ -334,6 +470,41 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
   </div>
 </div>
 
+<!-- Zoom overlay -->
+<div class="img-zoom-ov" id="imgZoomOv" onclick="closeZoom()">
+  <img id="imgZoomImg" src="" alt="">
+</div>
+
+<!-- Fullscreen match modal -->
+<div class="match-fs-ov" id="matchFS">
+  <div class="match-fs-hdr">
+    <span class="match-fs-hdr-title">🖼️ Ghép & kiểm tra ảnh học sinh</span>
+    <span id="matchFSBadge" class="match-count-badge">0 / 0</span>
+    <button onclick="autoMatchPhotos();renderMatchFSList()" style="background:var(--cert-dim);border:1px solid var(--cert-bd);color:var(--cert);padding:4px 12px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--font)">⚡ Tự ghép lại</button>
+    <div style="flex:1"></div>
+    <span style="font-size:11px;color:var(--mu)">← → để chuyển học sinh &nbsp;|&nbsp; Esc để đóng</span>
+    <button onclick="closeMatchFS()" style="background:var(--cert);color:#fff;border:none;border-radius:6px;padding:7px 20px;cursor:pointer;font-size:13px;font-weight:700;font-family:var(--font)">✓ Xong</button>
+  </div>
+  <div class="match-fs-body">
+    <div class="match-fs-list" id="matchFSList"></div>
+    <div class="match-fs-prev" id="matchFSPrev">
+      <div style="color:var(--mu);font-size:14px">← Chọn học sinh từ danh sách</div>
+    </div>
+  </div>
+</div>
+
+<!-- Photo selector overlay -->
+<div class="psel-ov" id="pselOv" onclick="if(event.target===this)closePhotoSelector()">
+  <div class="psel-box">
+    <div class="psel-head">
+      <h3>🖼️ Chọn ảnh cho: <span id="pselStudentName" style="color:var(--cert)"></span></h3>
+      <button class="psel-close" onclick="closePhotoSelector()">✕</button>
+    </div>
+    <div class="psel-search"><input type="text" id="pselSearch" placeholder="Tìm theo tên file..." oninput="renderPhotoGrid(this.value)"></div>
+    <div class="psel-grid" id="pselGrid"></div>
+  </div>
+</div>
+
 <div class="layout">
 
   <!-- ═══ LEFT PANEL ═══ -->
@@ -361,13 +532,31 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
       <div class="uinfo" id="xlsInfo"></div>
 
       <div id="photoSection" style="display:none">
-        <div class="fg" style="margin-bottom:3px"><label>Ảnh học sinh (nhiều file cùng lúc)</label></div>
-        <div class="uz" id="photoZone">
-          <input type="file" accept="image/*" multiple id="photoInput">
-          <span class="ico">👤</span>
-          <div>Tên file phải khớp cột Excel (VD: NguyenVanA_12A.jpg)</div>
+        <div class="folder-tab-bar">
+          <button class="folder-tab active" id="tabFolderMode" onclick="setPhotoMode('folder')">📁 Upload thư mục lớp</button>
+          <button class="folder-tab" id="tabFilesMode" onclick="setPhotoMode('files')">🖼️ Chọn ảnh riêng lẻ</button>
         </div>
-        <div class="uinfo" id="photoInfo"></div>
+
+        <!-- Folder mode -->
+        <div id="folderModeUI">
+          <div class="uz" id="folderZone">
+            <input type="file" id="folderInput" webkitdirectory>
+            <span class="ico">📁</span>
+            <div>Chọn thư mục lớp (chứa file .xlsx + ảnh học sinh)</div>
+          </div>
+          <div id="folderMatchStats" class="match-stats" style="display:none"></div>
+        </div>
+
+        <!-- Files mode -->
+        <div id="filesModeUI" style="display:none">
+          <div class="fg" style="margin-bottom:3px"><label>Ảnh học sinh (nhiều file cùng lúc)</label></div>
+          <div class="uz" id="photoZone">
+            <input type="file" accept="image/*" multiple id="photoInput">
+            <span class="ico">👤</span>
+            <div>Tên file phải khớp cột Excel (VD: NguyenVanA_12A.jpg)</div>
+          </div>
+          <div class="uinfo" id="photoInfo"></div>
+        </div>
       </div>
     </div>
 
@@ -385,11 +574,33 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
       <button class="add-btn inv" id="addTfBtn" onclick="addTextField()">＋ Thêm trường văn bản</button>
     </div>
 
-    <!-- STEP 3: IMAGE FIELDS (cert only) -->
+    <!-- STEP 2: MATCH TABLE (cert only) -->
+    <div class="sec" id="matchSec" style="display:none">
+      <div class="stitle cert"><span class="snum cert">2</span> Ghép ảnh học sinh</div>
+      <div class="fg" style="margin-bottom:8px">
+        <label>Cột họ và tên học sinh</label>
+        <select id="nameColSel" onchange="setNameCol(this.value)"><option value="">— chọn cột —</option></select>
+      </div>
+      <button class="match-fs-open-btn" onclick="openMatchFS()">
+        🔍 Mở màn hình ghép & kiểm tra ảnh (full screen)
+      </button>
+      <div class="match-sec-header">
+        <span id="matchCountBadge" class="match-count-badge">0 / 0 đã ghép</span>
+        <button class="btn btn-sm" onclick="autoMatchPhotos()" style="background:var(--cert-dim);border:1px solid var(--cert-bd);color:var(--cert);font-size:10px" title="Tự động ghép dựa vào tên file và tên học sinh">⚡ Tự ghép lại</button>
+        <button class="btn btn-sm" onclick="clearAllMatches()" style="background:none;border:1px solid var(--bd2);color:var(--mu);font-size:10px">✕ Xoá hết</button>
+      </div>
+      <div class="match-scroll">
+        <table class="match-table">
+          <thead><tr><th style="width:22px">#</th><th>Họ và tên</th><th>Ảnh</th></tr></thead>
+          <tbody id="matchTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STEP 3: ADJUST IMAGE FRAME (cert only) -->
     <div class="sec" id="imgFieldsSec" style="display:none">
-      <div class="stitle cert"><span class="snum cert">3</span> Trường hình ảnh (ảnh học sinh)</div>
+      <div class="stitle cert"><span class="snum cert">3</span> Căn chỉnh vùng ảnh</div>
       <div id="imageFieldsList"></div>
-      <button class="add-btn cert" onclick="addImageField()">＋ Thêm trường ảnh</button>
     </div>
 
     <!-- STEP 4/3: EXPORT -->
@@ -528,6 +739,9 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
       </div>
     </div>
 
+    <!-- Cert info bar (cert tab only) -->
+    <div class="cert-bar" id="certBar"></div>
+
     <div class="preview-area" id="previewArea">
       <div class="empty-state" id="emptyState">
         <div class="eico">🎨</div>
@@ -637,12 +851,16 @@ function mkState() {
     templateImg:null, tW:0, tH:0,
     records:[], cols:[],
     textFields:[], imageFields:[],
-    photos: new Map(),
+    photos: new Map(),       // normKey → blobUrl
+    photoNames: new Map(),   // normKey → original filename
+    matchMap: {},            // recIdx → {key, url, filename}
+    matchMapFiles: {},       // recIdx → filename (saved for session restore)
+    nameCol: '',
     currentIdx:0, pickTarget:null,
     previewScale:0.55,
     fmt:'jpeg', filenameCol:'', filePrefix:'',
     fnTemplate:'', noAccent:true, spaceUnderscore:true,
-    nudgeStep:5,
+    nudgeStep:5, ifStep:5, cropStep:5,
   };
 }
 const STATES = {inv:mkState(), cert:mkState()};
@@ -668,12 +886,19 @@ function switchTab(tab) {
   $i('pdfExpBar').style.display     = isPdf?'block':'none';
   if(isPdf){ renderPDFFields(); refreshPDFUI(); return; }
   $i('photoSection').style.display = isCert?'block':'none';
+  $i('matchSec').style.display     = isCert?'block':'none';
   $i('imgFieldsSec').style.display  = isCert?'block':'none';
-  $i('expStepNum').textContent = isCert?'4':'3';
+  $i('expStepNum').textContent = isCert?'5':'3';
   const tfTitle = $i('tfTitle');
   tfTitle.className = 'stitle ' + (isCert?'cert':'inv');
   $i('tfNum').className = 'snum ' + (isCert?'cert':'inv');
+  $i('tfNum').textContent = isCert?'4':'2';
   $i('addTfBtn').className = 'add-btn ' + (isCert?'cert':'inv');
+  // Auto-create one image field if none exists
+  if(isCert && CS().imageFields.length===0){
+    CS().imageFields.push({id:uid(),col:CS().cols[0]||'',x:100,y:100,w:160,h:200,fit:'cover',circle:false,cropX:0,cropY:0,studentCrops:{}});
+  }
+  if(isCert){ refreshNameColSel(); renderMatchTable(); }
   const sc = CS().previewScale;
   $i('scaleRange').value = Math.round(sc*100);
   $i('scaleLabel').textContent = Math.round(sc*100)+'%';
@@ -682,6 +907,7 @@ function switchTab(tab) {
   renderImageFields();
   refreshFNSel();
   refreshUI();
+  updateCertBar();
 }
 
 // ══════════════════════════════════════════════
@@ -707,10 +933,36 @@ $i('tplInput').addEventListener('change', async e=>{
   const img=await loadImg(URL.createObjectURL(f)).catch(()=>null);
   if(!img){alert('Không đọc được ảnh!');return;}
   CS().templateImg=img; CS().tW=img.naturalWidth; CS().tH=img.naturalHeight;
+  invalidateTplCache();
   $i('tplZone').classList.add('ok');
   $i('tplInfo').textContent=`✓ ${f.name} — ${CS().tW}×${CS().tH}px`;
   refreshUI();
 });
+
+// Tìm dòng header thực sự: bỏ qua tiêu đề, lấy dòng đầu tiên có ≥3 ô không rỗng và cột B không rỗng
+function findHeaderRow(ws){
+  const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  for(let i=0;i<Math.min(raw.length,15);i++){
+    const row=raw[i];
+    const nonEmpty=row.filter(c=>String(c).trim()!=='').length;
+    if(nonEmpty>=3 && String(row[1]||'').trim()!=='') return i;
+  }
+  return 0;
+}
+
+// Sau khi load xong, tự chọn nameCol = cột B (index 1)
+function applyXlsData(data, fname, uiLabel){
+  if(!data.length){alert('File không có dữ liệu!');return false;}
+  const s=CS();
+  s.records=data; s.cols=Object.keys(data[0]); s.currentIdx=0;
+  // Mặc định nameCol = cột B
+  s.nameCol = s.cols.length>1 ? s.cols[1] : (s.cols[0]||'');
+  $i('xlsZone').classList.add('ok');
+  $i('xlsInfo').textContent=`✓ ${fname} — ${data.length} dòng | Cột B: ${eH(s.nameCol)}`;
+  refreshColChips(); refreshFNSel(); refreshUI(); updateFnPreview();
+  if(activeTab==='cert'){ refreshNameColSel(); renderMatchTable(); }
+  return true;
+}
 
 $i('xlsInput').addEventListener('change', e=>{
   const f=e.target.files[0]; if(!f) return;
@@ -719,24 +971,111 @@ $i('xlsInput').addEventListener('change', e=>{
     try{
       const wb=XLSX.read(ev.target.result,{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
-      const data=XLSX.utils.sheet_to_json(ws,{defval:''});
-      if(!data.length){alert('File không có dữ liệu!');return;}
-      CS().records=data; CS().cols=Object.keys(data[0]); CS().currentIdx=0;
-      $i('xlsZone').classList.add('ok');
-      $i('xlsInfo').textContent=`✓ ${f.name} — ${data.length} dòng | Cột: ${CS().cols.join(', ')}`;
-      refreshColChips(); refreshFNSel(); refreshUI(); updateFnPreview();
-    }catch(err){alert('Lỗi: '+err.message);}
+      const hdr=findHeaderRow(ws);
+      const data=XLSX.utils.sheet_to_json(ws,{defval:'',range:hdr});
+      applyXlsData(data, f.name, f.name);
+    }catch(err){alert('Lỗi đọc Excel: '+err.message);}
   };
   r.readAsArrayBuffer(f);
 });
 
 $i('photoInput').addEventListener('change', e=>{
   const files=Array.from(e.target.files);
-  CS().photos.clear();
-  files.forEach(f=>CS().photos.set(normKey(f.name), URL.createObjectURL(f)));
+  CS().photos.clear(); CS().photoNames.clear();
+  files.forEach(f=>{const k=normKey(f.name);CS().photos.set(k,URL.createObjectURL(f));CS().photoNames.set(k,f.name);});
   $i('photoZone').classList.add('ok');
   $i('photoInfo').textContent=`✓ Đã tải ${files.length} ảnh`;
+  if(activeTab==='cert'){
+    if(CS().imageFields.length===0 && CS().records.length){
+      const s=CS();
+      s.imageFields.push({id:uid(),col:s.nameCol||s.cols[0]||'',x:100,y:100,w:160,h:200,fit:'cover',circle:false,cropX:0,cropY:0,studentCrops:{}});
+      renderImageFields();
+    }
+    autoMatchPhotos();
+    renderMatchTable();
+    buildMatchStats();
+  }
+  renderCanvas(); updateCertBar();
+});
+
+// ══════════════════════════════════════════════
+//  FOLDER UPLOAD (cert mode)
+// ══════════════════════════════════════════════
+function setPhotoMode(mode){
+  $i('folderModeUI').style.display=mode==='folder'?'block':'none';
+  $i('filesModeUI').style.display=mode==='files'?'block':'none';
+  $i('tabFolderMode').classList.toggle('active',mode==='folder');
+  $i('tabFilesMode').classList.toggle('active',mode==='files');
+}
+
+function loadXlsBuffer(buf, fname){
+  const wb=XLSX.read(buf,{type:'array'});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  const hdr=findHeaderRow(ws);
+  const data=XLSX.utils.sheet_to_json(ws,{defval:'',range:hdr});
+  return applyXlsData(data, fname, fname);
+}
+
+function buildMatchStats(){
+  const s=CS();
+  if(!s.records.length||!s.photos.size) return;
+  // Find the image-field column (first imageField col, or first col that looks like a name)
+  const nameCols=s.imageFields.length?s.imageFields.map(f=>f.col):[];
+  // For stats, pick any name-like column or just report overall
+  const statsEl=$i('folderMatchStats');
+  if(!statsEl) return;
+  // Try each image field col
+  if(!nameCols.length){statsEl.style.display='none';return;}
+  const col=nameCols[0];
+  let found=0, missing=[];
+  for(const rec of s.records){
+    const val=String(rec[col]||'');
+    const url=findPhoto(val);
+    if(url) found++; else if(val) missing.push(val);
+  }
+  const total=s.records.length;
+  statsEl.style.display='block';
+  statsEl.innerHTML=`<span class="match-ok">✓ ${found}/${total}</span> ảnh tìm thấy tự động`
+    +(missing.length?`<span class="match-miss"> · ${missing.length} chưa khớp</span>`:'')
+    +(missing.length?`<div class="match-list">${missing.slice(0,15).map(n=>`<span style="color:var(--red)">✗ ${eH(n)}</span>`).join('')}${missing.length>15?`<span style="color:var(--mu)">...và ${missing.length-15} khác</span>`:''}</div>`:'');
+}
+
+dragDrop('folderZone','folderInput');
+$i('folderInput').addEventListener('change', async e=>{
+  const allFiles=Array.from(e.target.files);
+  if(!allFiles.length) return;
+  const xlsFiles=allFiles.filter(f=>/\.xlsx?$|\.csv$/i.test(f.name));
+  const imgFiles=allFiles.filter(f=>/\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name));
+
+  // Load Excel (first xlsx found)
+  if(xlsFiles.length){
+    const xf=xlsFiles[0];
+    const buf=await xf.arrayBuffer();
+    loadXlsBuffer(buf, xf.name);
+  }
+
+  // Load photos
+  CS().photos.clear(); CS().photoNames.clear();
+  imgFiles.forEach(f=>{const k=normKey(f.name);CS().photos.set(k,URL.createObjectURL(f));CS().photoNames.set(k,f.name);});
+
+  const zone=$i('folderZone');
+  zone.classList.add('ok');
+  zone.querySelector('div').textContent=`✓ ${allFiles.length} file — ${xlsFiles.length} Excel, ${imgFiles.length} ảnh`;
+
   renderCanvas();
+  // nameCol already set to col B by applyXlsData; just match + render
+  setTimeout(()=>{
+    const s=CS();
+    if(s.imageFields.length===0 && activeTab==='cert'){
+      s.imageFields.push({id:uid(),col:s.nameCol||s.cols[0]||'',x:100,y:100,w:160,h:200,fit:'cover',circle:false,cropX:0,cropY:0,studentCrops:{}});
+    }
+    refreshNameColSel();
+    autoMatchPhotos();
+    renderMatchTable();
+    renderImageFields();
+    updateCertBar();
+    buildMatchStats();
+  }, 150);
 });
 
 // ══════════════════════════════════════════════
@@ -896,44 +1235,54 @@ function renderTextFields(){
 //  IMAGE FIELDS
 // ══════════════════════════════════════════════
 function addImageField(){
-  CS().imageFields.push({id:uid(),col:CS().cols[0]||'',x:100,y:100,w:160,h:200,fit:'cover',circle:false});
-  renderImageFields(); renderCanvas();
+  CS().imageFields.push({id:uid(),col:CS().cols[0]||'',x:100,y:100,w:160,h:200,fit:'cover',circle:false,cropX:0,cropY:0,studentCrops:{}});
+  renderImageFields(); renderCanvas(); updateCertBar(); setTimeout(buildMatchStats,50);
 }
 function removeIF(id){
   CS().imageFields=CS().imageFields.filter(f=>f.id!==id);
   if(CS().pickTarget?.id===id) cancelPick();
-  renderImageFields(); renderCanvas();
+  if(activeCropFieldId===id){activeCropFieldId=null;}
+  renderImageFields(); renderCanvas(); updateCertBar();
 }
 function updIF(id,key,val){
   const f=CS().imageFields.find(x=>x.id===id);
-  if(f){f[key]=val; renderCanvas();}
+  if(f){f[key]=val; renderCanvas(); if(key==='col') setTimeout(buildMatchStats,50);}
 }
 function renderImageFields(){
   const s=CS();
+  if(activeTab!=='cert'){ $i('imageFieldsList').innerHTML=''; return; }
+  const st=s.ifStep||5;
+  const cst=s.cropStep||5;
   $i('imageFieldsList').innerHTML=s.imageFields.map((f,i)=>{
-    const isPick=s.pickTarget?.id===f.id;
+    const isCrop=activeCropFieldId===f.id;
+    const crops=f.studentCrops||{};
+    const crop=crops[s.currentIdx]||{x:0,y:0};
+    const hasCrop=!!(crops[s.currentIdx]);
+    const totalCropped=Object.keys(crops).length;
+    const mm=s.matchMap||{};
+    const photoEntry=mm[s.currentIdx];
     return `
-    <div class="fcard${isPick?' pick-mode':''}">
+    <div style="font-size:11px;color:var(--mu);margin-bottom:8px;font-style:italic">
+      💡 Kéo thả trực tiếp trên canvas để di chuyển/resize vùng ảnh
+    </div>
+    <div class="fcard${isCrop?' crop-mode':''}">
       <div class="fhdr">
-        <span class="fnum">I${i+1}</span>
-        <span class="ftag" style="color:#c07af0">Trường ảnh</span>
-        <button class="btn btn-sm btn-pick ${isPick?'live':'idle'}" onclick="togglePick('img',${f.id})">
-          ${isPick?'📍 Đang chọn…':'🎯 Chọn vị trí'}
+        <span class="ftag" style="color:#c07af0">Vùng ảnh</span>
+        <span class="if-size-lbl" style="font-size:10px;font-family:monospace;color:var(--mu);margin-left:4px">${f.w}×${f.h}px</span>
+        <button class="btn btn-sm btn-pick ${!s.pickTarget||s.pickTarget.id!==f.id?'idle':'live'}" onclick="togglePick('img',${f.id})" style="margin-left:auto">
+          ${(!s.pickTarget||s.pickTarget.id!==f.id)?'🎯 Đặt vị trí':'📍 Đang chọn…'}
         </button>
-        <button class="del-btn" onclick="removeIF(${f.id})">✕</button>
       </div>
-      <div class="fg"><label>Cột chứa tên file ảnh</label>
-        <select onchange="updIF(${f.id},'col',this.value)">
-          ${s.cols.map(c=>`<option value="${eH(c)}" ${c===f.col?'selected':''}>${eH(c)}</option>`).join('')}
-        </select>
+      <button onclick="autoFitToHole()" style="width:100%;margin-bottom:8px;padding:6px;background:var(--cert-dim);border:1px solid var(--cert-bd);color:var(--cert);border-radius:5px;cursor:pointer;font-size:11px;font-weight:700;font-family:var(--font)" title="Tự động quét vùng trong suốt của template và đặt khung ảnh vào đó">
+        🔍 Tự căn theo lỗ khoét PNG
+      </button>
+
+      <!-- Frame size & display -->
+      <div class="g2" style="margin-bottom:5px">
+        <div class="fg"><label>Rộng</label><input type="number" value="${f.w}" min="20" oninput="updIF(${f.id},'w',+this.value)"></div>
+        <div class="fg"><label>Cao</label><input type="number" value="${f.h}" min="20" oninput="updIF(${f.id},'h',+this.value)"></div>
       </div>
-      <div class="g4" style="margin-bottom:6px">
-        <div class="fg"><label>X</label><input type="number" value="${f.x}" oninput="updIF(${f.id},'x',+this.value)"></div>
-        <div class="fg"><label>Y</label><input type="number" value="${f.y}" oninput="updIF(${f.id},'y',+this.value)"></div>
-        <div class="fg"><label>Rộng</label><input type="number" value="${f.w}" oninput="updIF(${f.id},'w',+this.value)"></div>
-        <div class="fg"><label>Cao</label><input type="number" value="${f.h}" oninput="updIF(${f.id},'h',+this.value)"></div>
-      </div>
-      <div class="g2">
+      <div class="g2" style="margin-bottom:6px">
         <div class="fg"><label>Fill mode</label>
           <select onchange="updIF(${f.id},'fit',this.value)">
             <option value="cover" ${f.fit==='cover'?'selected':''}>Cover (cắt khít)</option>
@@ -944,6 +1293,55 @@ function renderImageFields(){
         <div class="fg" style="justify-content:flex-end;padding-top:16px">
           <label class="cb"><input type="checkbox" ${f.circle?'checked':''} onchange="updIF(${f.id},'circle',this.checked);renderImageFields()"> Hình tròn</label>
         </div>
+      </div>
+
+      <!-- Frame d-pad (moves frame for ALL students) -->
+      <div style="font-size:10px;color:var(--mu);margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px">Di chuyển vùng ảnh (tất cả)</div>
+      <div class="pos-box">
+        <div class="dpad">
+          <div class="dpad-row"><button class="dpad-btn" onclick="nudgeIF(${f.id},0,-${st})">↑</button></div>
+          <div class="dpad-row">
+            <button class="dpad-btn" onclick="nudgeIF(${f.id},-${st},0)">←</button>
+            <div class="dpad-ctr">·</div>
+            <button class="dpad-btn" onclick="nudgeIF(${f.id},${st},0)">→</button>
+          </div>
+          <div class="dpad-row"><button class="dpad-btn" onclick="nudgeIF(${f.id},0,${st})">↓</button></div>
+        </div>
+        <div class="step-row" style="margin-top:5px">
+          <span>Bước:</span>
+          ${[1,5,10,50].map(v=>`<button class="step-btn-s${v===st?' active':''}" onclick="setIFStep(${v})">${v}px</button>`).join('')}
+        </div>
+        <div class="if-pos-lbl" style="font-size:10px;font-family:monospace;color:var(--mu);margin-top:4px;text-align:center">x: ${f.x} · y: ${f.y}</div>
+      </div>
+
+      <!-- Per-student crop d-pad -->
+      <div class="crop-dpad-wrap">
+        <div class="crop-dpad-title">
+          <span>✂️ Căn chỉnh ảnh học sinh này</span>
+          <span class="crop-offset-label">${hasCrop?`${crop.x>0?'+':''}${crop.x}, ${crop.y>0?'+':''}${crop.y}`:''}</span>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div>
+            <div class="dpad">
+              <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCrop(${f.id},0,-${cst})">↑</button></div>
+              <div class="dpad-row">
+                <button class="dpad-btn" onclick="nudgeCrop(${f.id},-${cst},0)">←</button>
+                <div class="dpad-ctr">·</div>
+                <button class="dpad-btn" onclick="nudgeCrop(${f.id},${cst},0)">→</button>
+              </div>
+              <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCrop(${f.id},0,${cst})">↓</button></div>
+            </div>
+            <div class="step-row" style="margin-top:5px">
+              <span>Bước:</span>
+              ${[1,5,10,50].map(v=>`<button class="step-btn-s${v===cst?' active':''}" onclick="setCropStep(${v})">${v}px</button>`).join('')}
+            </div>
+          </div>
+          <div style="flex:1;padding-top:4px">
+            ${photoEntry?`<img src="${photoEntry.url}" style="width:100%;max-height:80px;object-fit:cover;border-radius:4px;border:1px solid var(--bd2)">`:'<div style="text-align:center;color:var(--mu);font-size:10px;margin-top:20px">Chưa ghép ảnh</div>'}
+            ${hasCrop?`<div style="margin-top:4px;text-align:right"><button onclick="resetCropCurrent()" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:10px" title="Reset crop học sinh này">↺ Reset</button></div>`:''}
+          </div>
+        </div>
+        ${totalCropped>1?`<div style="font-size:10px;color:var(--mu);margin-top:6px;border-top:1px solid var(--bd);padding-top:5px">Đã crop: <b>${totalCropped}</b> HS &nbsp;·&nbsp; <button onclick="resetAllCrops(${f.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px">Xoá tất cả</button></div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -995,27 +1393,136 @@ $i('previewCanvas').addEventListener('click', e=>{
   const py=Math.round((e.clientY-rect.top)/s.previewScale);
   const {type,id}=s.pickTarget;
   if(type==='text'){const f=s.textFields.find(x=>x.id===id);if(f){f.x=px;f.y=py;}}
-  else {const f=s.imageFields.find(x=>x.id===id);if(f){f.x=px;f.y=py;}}
+  else {const f=s.imageFields.find(x=>x.id===id);if(f){f.x=Math.round(px-f.w/2);f.y=Math.round(py-f.h/2);}}
   cancelPick(); renderTextFields(); renderImageFields(); renderCanvas();
 });
 
-$i('previewCanvas').addEventListener('mousemove', e=>{
-  if(!CS().pickTarget){$i('coordTip').textContent='';return;}
-  const rect=e.target.getBoundingClientRect();
-  const px=Math.round((e.clientX-rect.left)/CS().previewScale);
-  const py=Math.round((e.clientY-rect.top)/CS().previewScale);
-  $i('coordTip').textContent=`x: ${px}  y: ${py}`;
-  const dot=$i('pickDot');
-  dot.style.display='block';
-  dot.style.left=(e.clientX-rect.left)+'px';
-  dot.style.top=(e.clientY-rect.top)+'px';
+// ══════════════════════════════════════════════
+//  CANVAS DRAG / RESIZE / CROP
+// ══════════════════════════════════════════════
+let canvasDrag=null, hoveredIFId=null, activeCropFieldId=null;
+
+const HANDLE_DIRS=['nw','n','ne','e','se','s','sw','w'];
+function getHandlePoints(f,sc){
+  const x=f.x*sc,y=f.y*sc,w=f.w*sc,h=f.h*sc;
+  return [[x,y],[x+w/2,y],[x+w,y],[x+w,y+h/2],[x+w,y+h],[x+w/2,y+h],[x,y+h],[x,y+h/2]];
+}
+function getHandleHit(mx,my,f,sc){
+  const pts=getHandlePoints(f,sc);
+  for(let i=0;i<pts.length;i++){
+    const[hx,hy]=pts[i];
+    if(Math.abs(mx-hx)<=6&&Math.abs(my-hy)<=6) return HANDLE_DIRS[i];
+  }
+  return null;
+}
+const CURSOR_MAP={nw:'nwse-resize',se:'nwse-resize',ne:'nesw-resize',sw:'nesw-resize',n:'ns-resize',s:'ns-resize',e:'ew-resize',w:'ew-resize'};
+function applyResize(f,drag,dx,dy){
+  const h=drag.handle;
+  let {origX:ox,origY:oy,origW:ow,origH:oh}=drag;
+  // Clamp to min 20px
+  if(h.includes('w')){const nx=ox+dx;const nw=ow-dx;if(nw>=20){f.x=Math.round(nx);f.w=Math.round(nw);}}
+  if(h.includes('e')){const nw=ow+dx;if(nw>=20)f.w=Math.round(nw);}
+  if(h.includes('n')){const ny=oy+dy;const nh=oh-dy;if(nh>=20){f.y=Math.round(ny);f.h=Math.round(nh);}}
+  if(h.includes('s')){const nh=oh+dy;if(nh>=20)f.h=Math.round(nh);}
+}
+
+const canvas=$i('previewCanvas');
+canvas.addEventListener('mousedown',e=>{
+  if(CS().pickTarget) return;
+  if(activeTab!=='cert') return;
+  const rect=canvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const sc=CS().previewScale;
+  for(const f of [...CS().imageFields].reverse()){
+    const handle=getHandleHit(mx,my,f,sc);
+    if(handle){
+      canvasDrag={mode:'resize',fieldId:f.id,handle,startX:mx,startY:my,origX:f.x,origY:f.y,origW:f.w,origH:f.h};
+      e.preventDefault(); return;
+    }
+    if(mx>=f.x*sc&&mx<=(f.x+f.w)*sc&&my>=f.y*sc&&my<=(f.y+f.h)*sc){
+      const crop=(f.studentCrops||{})[CS().currentIdx]||{x:f.cropX||0,y:f.cropY||0};
+      if(activeCropFieldId===f.id){
+        canvasDrag={mode:'crop',fieldId:f.id,startX:mx,startY:my,origCropX:crop.x,origCropY:crop.y};
+      } else {
+        canvasDrag={mode:'move',fieldId:f.id,startX:mx,startY:my,origX:f.x,origY:f.y};
+      }
+      e.preventDefault(); return;
+    }
+  }
 });
-$i('previewCanvas').addEventListener('mouseleave',()=>{$i('coordTip').textContent='';$i('pickDot').style.display='none';});
+
+$i('previewCanvas').addEventListener('mousemove', e=>{
+  const rect=e.target.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  const sc=CS().previewScale;
+
+  if(CS().pickTarget){
+    const px=Math.round(mx/sc), py=Math.round(my/sc);
+    $i('coordTip').textContent=`x: ${px}  y: ${py}`;
+    const dot=$i('pickDot');
+    dot.style.display='block';dot.style.left=mx+'px';dot.style.top=my+'px';
+    return;
+  }
+
+  if(canvasDrag){
+    const dx=(mx-canvasDrag.startX)/sc, dy=(my-canvasDrag.startY)/sc;
+    const f=CS().imageFields.find(x=>x.id===canvasDrag.fieldId);
+    if(f){
+      if(canvasDrag.mode==='move'){f.x=Math.round(canvasDrag.origX+dx);f.y=Math.round(canvasDrag.origY+dy);}
+      else if(canvasDrag.mode==='resize') applyResize(f,canvasDrag,dx,dy);
+      else if(canvasDrag.mode==='crop'){
+        if(!f.studentCrops) f.studentCrops={};
+        f.studentCrops[CS().currentIdx]={x:Math.round(canvasDrag.origCropX+dx),y:Math.round(canvasDrag.origCropY+dy)};
+      }
+      // Chỉ redraw canvas trong khi drag, cập nhật DOM panel khi mouseup
+      renderCanvas();
+      // Cập nhật nhẹ: chỉ số tọa độ/kích thước trong panel
+      const posEl=document.querySelector('.if-pos-lbl');
+      if(posEl) posEl.textContent=`x: ${f.x} · y: ${f.y}`;
+      const sizeEl=document.querySelector('.if-size-lbl');
+      if(sizeEl) sizeEl.textContent=`${f.w}×${f.h}px`;
+    }
+    return;
+  }
+
+  // Update hover / cursor (cert mode only)
+  if(activeTab==='cert'){
+    let newHover=null, cur='';
+    for(const f of [...CS().imageFields].reverse()){
+      const handle=getHandleHit(mx,my,f,sc);
+      if(handle){newHover=f.id;cur=CURSOR_MAP[handle]||'';break;}
+      if(mx>=f.x*sc&&mx<=(f.x+f.w)*sc&&my>=f.y*sc&&my<=(f.y+f.h)*sc){
+        newHover=f.id;cur=activeCropFieldId===f.id?'crosshair':'move';break;
+      }
+    }
+    canvas.style.cursor=cur;
+    if(newHover!==hoveredIFId){hoveredIFId=newHover;renderCanvas();}
+  }
+  $i('coordTip').textContent='';
+});
+
+$i('previewCanvas').addEventListener('mouseleave',()=>{
+  $i('coordTip').textContent='';$i('pickDot').style.display='none';
+  if(hoveredIFId){hoveredIFId=null;renderCanvas();}
+});
+document.addEventListener('mouseup',()=>{if(canvasDrag){canvasDrag=null;renderImageFields();renderCanvas();}});
+
+function toggleCropMode(id){
+  activeCropFieldId=(activeCropFieldId===id)?null:id;
+  renderImageFields(); renderCanvas(); updateCertBar();
+}
+function resetAllCrops(id){
+  const f=CS().imageFields.find(x=>x.id===id);
+  if(f){f.studentCrops={};f.cropX=0;f.cropY=0;}
+  renderImageFields(); renderCanvas(); updateCertBar();
+}
 
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape') cancelPick();
+  if(e.key==='Escape'){cancelPick();if(activeCropFieldId){activeCropFieldId=null;renderImageFields();renderCanvas();}}
   const t=e.target.tagName;
   if(t==='INPUT'||t==='TEXTAREA'||t==='SELECT') return;
+  // Don't handle arrows when fullscreen modal or photo selector is open (they have their own handlers)
+  if($i('matchFS').classList.contains('on')||$i('pselOv').classList.contains('on')) return;
   if(e.key==='ArrowLeft'||e.key==='ArrowUp') navigate(-1);
   if(e.key==='ArrowRight'||e.key==='ArrowDown') navigate(1);
 });
@@ -1038,10 +1545,34 @@ function renderCanvas(){
 async function doDraw(canvas, rec, sc, guides) {
   const s=CS();
   if(!s.templateImg) return;
-  canvas.width=Math.round(s.tW*sc);
-  canvas.height=Math.round(s.tH*sc);
+  const tw=Math.round(s.tW*sc), th=Math.round(s.tH*sc);
   const ctx=canvas.getContext('2d');
-  ctx.drawImage(s.templateImg,0,0,canvas.width,canvas.height);
+  if(canvas.width!==tw||canvas.height!==th){canvas.width=tw;canvas.height=th;}
+  else{ctx.clearRect(0,0,tw,th);}
+
+  // ── CERT MODE: draw student photo BELOW template ──
+  if(activeTab==='cert'){
+    for(const f of (s.imageFields||[])){
+      const mm=s.matchMap||{};
+      const photoEntry=mm[s.currentIdx];
+      const photoUrl=photoEntry?.url||null;
+      const cropData=(f.studentCrops||{})[s.currentIdx]||{x:0,y:0};
+      if(photoUrl){
+        try{const img=await loadImg(photoUrl);drawFit(ctx,img,f.x*sc,f.y*sc,f.w*sc,f.h*sc,f.fit,f.circle,cropData.x*sc,cropData.y*sc);}catch{}
+      } else if(guides){
+        ctx.save();
+        ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
+        ctx.font=`bold ${Math.round(12*sc)}px Arial`;ctx.fillStyle='rgba(255,255,255,.5)';
+        ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('Ảnh HS',(f.x+f.w/2)*sc,(f.y+f.h/2)*sc);
+        ctx.restore();
+      }
+    }
+  }
+
+  // Draw template on top (use cached bitmap if available for fast draw)
+  const tplDraw = guides ? await getTplDrawable(s.templateImg,sc) : s.templateImg;
+  ctx.drawImage(tplDraw,0,0,tw,th);
 
   // Cover blocks — white rectangles drawn first so text sits on top
   if(activeTab==='pdf'){
@@ -1072,19 +1603,49 @@ async function doDraw(canvas, rec, sc, guides) {
     ctx.restore();
   }
 
-  // Image fields
-  for(const f of (s.imageFields||[])){
-    const url=findPhoto(String(rec[f.col]||''));
-    if(url){
-      try{const img=await loadImg(url); drawFit(ctx,img,f.x*sc,f.y*sc,f.w*sc,f.h*sc,f.fit,f.circle);}catch{}
-    } else if(guides){
+  // Image fields (INV mode only — cert mode draws photos before template above)
+  if(activeTab!=='cert'){
+    for(const f of (s.imageFields||[])){
+      const url=findPhoto(String(rec[f.col]||''));
+      const cropData=(f.studentCrops||{})[s.currentIdx]||{x:f.cropX||0,y:f.cropY||0};
+      if(url){
+        try{const img=await loadImg(url); drawFit(ctx,img,f.x*sc,f.y*sc,f.w*sc,f.h*sc,f.fit,f.circle,cropData.x*sc,cropData.y*sc);}catch{}
+      } else if(guides){
+        ctx.save();
+        ctx.strokeStyle='rgba(168,122,240,.7)';ctx.setLineDash([6,3]);ctx.lineWidth=1.5;
+        ctx.strokeRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
+        ctx.fillStyle='rgba(168,122,240,.1)';ctx.fillRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
+        ctx.setLineDash([]);ctx.font=`bold ${Math.round(11*sc)}px Arial`;
+        ctx.fillStyle='rgba(168,122,240,.8)';ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.fillText('Ảnh',(f.x+f.w/2)*sc,(f.y+f.h/2)*sc);
+        ctx.restore();
+      }
+    }
+  }
+  // Drag/resize/crop handles for image fields (cert mode, preview only)
+  if(guides && activeTab==='cert'){
+    for(const f of (s.imageFields||[])){
+      const show=hoveredIFId===f.id||(canvasDrag&&canvasDrag.fieldId===f.id);
+      const isCrop=activeCropFieldId===f.id;
+      if(!show&&!isCrop) continue;
+      const sx=f.x*sc,sy=f.y*sc,sw=f.w*sc,sh=f.h*sc;
       ctx.save();
-      ctx.strokeStyle='rgba(168,122,240,.7)';ctx.setLineDash([6,3]);ctx.lineWidth=1.5;
-      ctx.strokeRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
-      ctx.fillStyle='rgba(168,122,240,.1)';ctx.fillRect(f.x*sc,f.y*sc,f.w*sc,f.h*sc);
-      ctx.setLineDash([]);ctx.font=`bold ${Math.round(11*sc)}px Arial`;
-      ctx.fillStyle='rgba(168,122,240,.8)';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText('Ảnh',(f.x+f.w/2)*sc,(f.y+f.h/2)*sc);
+      const hclr=isCrop?'rgba(168,122,240,.9)':'rgba(240,192,96,.9)';
+      ctx.strokeStyle=hclr;ctx.lineWidth=1.5;ctx.setLineDash([]);
+      ctx.strokeRect(sx,sy,sw,sh);
+      if(!isCrop){
+        const hpts=[[sx,sy],[sx+sw/2,sy],[sx+sw,sy],[sx+sw,sy+sh/2],[sx+sw,sy+sh],[sx+sw/2,sy+sh],[sx,sy+sh],[sx,sy+sh/2]];
+        for(const[hx,hy]of hpts){
+          ctx.fillStyle='#fff';ctx.fillRect(hx-4,hy-4,8,8);
+          ctx.strokeRect(hx-4,hy-4,8,8);
+        }
+      } else {
+        // Crop mode: show cross-hair guide lines inside box
+        ctx.strokeStyle='rgba(168,122,240,.4)';ctx.setLineDash([3,3]);ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(sx+sw/2,sy);ctx.lineTo(sx+sw/2,sy+sh);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(sx,sy+sh/2);ctx.lineTo(sx+sw,sy+sh/2);ctx.stroke();
+        ctx.setLineDash([]);
+      }
       ctx.restore();
     }
   }
@@ -1127,7 +1688,7 @@ async function doDraw(canvas, rec, sc, guides) {
   }
 }
 
-function drawFit(ctx,img,x,y,w,h,fit,circle){
+function drawFit(ctx,img,x,y,w,h,fit,circle,cropX,cropY){
   ctx.save();
   ctx.beginPath();
   if(circle) ctx.arc(x+w/2,y+h/2,Math.min(w,h)/2,0,Math.PI*2);
@@ -1136,24 +1697,69 @@ function drawFit(ctx,img,x,y,w,h,fit,circle){
   const iw=img.naturalWidth,ih=img.naturalHeight;
   if(fit==='stretch') ctx.drawImage(img,x,y,w,h);
   else if(fit==='contain'){const r=Math.min(w/iw,h/ih);const dw=iw*r,dh=ih*r;ctx.drawImage(img,x+(w-dw)/2,y+(h-dh)/2,dw,dh);}
-  else{const r=Math.max(w/iw,h/ih);const dw=iw*r,dh=ih*r;ctx.drawImage(img,x-(dw-w)/2,y-(dh-h)/2,dw,dh);}
+  else{
+    const r=Math.max(w/iw,h/ih);const dw=iw*r,dh=ih*r;
+    const maxPX=(dw-w)/2, maxPY=(dh-h)/2;
+    const ox=cropX?Math.max(-maxPX,Math.min(maxPX,cropX)):0;
+    const oy=cropY?Math.max(-maxPY,Math.min(maxPY,cropY)):0;
+    ctx.drawImage(img,x-(dw-w)/2+ox,y-(dh-h)/2+oy,dw,dh);
+  }
   ctx.restore();
 }
 
 // ══════════════════════════════════════════════
 //  HELPERS
 // ══════════════════════════════════════════════
+const _imgCache=new Map();
 function loadImg(src){
-  return new Promise((res,rej)=>{const i=new Image();if(!src.startsWith('blob:'))i.crossOrigin='anonymous';i.onload=()=>res(i);i.onerror=rej;i.src=src;});
+  if(_imgCache.has(src)) return Promise.resolve(_imgCache.get(src));
+  return new Promise((res,rej)=>{
+    const i=new Image();
+    if(!src.startsWith('blob:'))i.crossOrigin='anonymous';
+    i.onload=()=>{_imgCache.set(src,i);res(i);};
+    i.onerror=rej; i.src=src;
+  });
 }
+// Template bitmap cache — pre-scaled per zoom level, avoids re-scaling every frame
+let _tplCache=null; // {ref, sc, bm}
+async function getTplDrawable(img, sc){
+  if(_tplCache && _tplCache.ref===img && _tplCache.sc===sc) return _tplCache.bm;
+  const tw=Math.round(img.naturalWidth*sc), th=Math.round(img.naturalHeight*sc);
+  try{
+    const bm=await createImageBitmap(img,{resizeWidth:tw,resizeHeight:th,resizeQuality:'high'});
+    _tplCache={ref:img,sc,bm};
+    return bm;
+  }catch{ return img; }
+}
+function invalidateTplCache(){ _tplCache=null; }
 function normKey(n){return n.toLowerCase().trim().replace(/\.[a-z0-9]{1,5}$/i,'').replace(/\s+/g,' ');}
-function findPhoto(val){
-  if(!val||!CS().photos.size) return null;
-  const key=normKey(val);
-  if(CS().photos.has(key)) return CS().photos.get(key);
-  for(const[k,v]of CS().photos){if(k.includes(key)||key.includes(k)) return v;}
-  return null;
+function normForFuzzy(s){return removeAccents(String(s||'')).toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();}
+function tokenScore(nameStr,fileStr){
+  const tokens=nameStr.split(' ').filter(t=>t.length>=2);
+  if(!tokens.length) return 0;
+  const matched=tokens.filter(t=>fileStr.includes(t));
+  return matched.length/tokens.length;
 }
+function findPhotoInfo(val){
+  if(!val||!CS().photos.size) return null;
+  const pn=CS().photoNames;
+  const key=normKey(val);
+  // 1. Exact
+  if(CS().photos.has(key)) return {key,url:CS().photos.get(key),filename:pn.get(key)||key};
+  // 2. Substring
+  for(const[k,v]of CS().photos){
+    if(k.includes(key)||key.includes(k)) return {key:k,url:v,filename:pn.get(k)||k};
+  }
+  // 3. Fuzzy token match ≥60%
+  const normVal=normForFuzzy(val);
+  let best=null,bestScore=0.60,bestKey=null;
+  for(const[k,v]of CS().photos){
+    const score=tokenScore(normVal,normForFuzzy(k));
+    if(score>bestScore){bestScore=score;best=v;bestKey=k;}
+  }
+  return best?{key:bestKey,url:best,filename:pn.get(bestKey)||bestKey}:null;
+}
+function findPhoto(val){return (findPhotoInfo(val)||{}).url||null;}
 function eH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // ══════════════════════════════════════════════
@@ -1252,6 +1858,7 @@ function navigate(dir){
   const s=CS();
   s.currentIdx=Math.max(0,Math.min(s.records.length-1,s.currentIdx+dir));
   updateNav(); renderTextFields(); renderCanvas(); updateFnPreview();
+  if(activeTab==='cert'){ renderImageFields(); renderMatchTable(); }
 }
 function updateNav(){
   const s=CS(),n=s.records.length;
@@ -1263,8 +1870,333 @@ function updateNav(){
     const lbl=s.textFields.map(f=>evalTpl(f.template,rec)).filter(Boolean).join(' | ');
     $i('recLabel').textContent=lbl?`→ ${lbl}`:'';
   } else $i('recLabel').textContent='';
+  updateCertBar();
 }
-function setScale(v){CS().previewScale=v;$i('scaleLabel').textContent=Math.round(v*100)+'%';renderCanvas();}
+
+function updateCertBar(){
+  const bar=$i('certBar');
+  if(!bar) return;
+  const s=CS();
+  if(activeTab!=='cert'||!s.records.length||!s.templateImg){
+    bar.classList.remove('on'); return;
+  }
+  bar.classList.add('on');
+  if(!s.imageFields.length){
+    bar.innerHTML='<span style="color:var(--mu);font-size:11px">➕ Thêm trường ảnh (bước 3) để kiểm tra ghép ảnh</span>';
+    return;
+  }
+  const rec=s.records[s.currentIdx]||{};
+  let html='<div class="cert-bar-section">';
+  for(let i=0;i<s.imageFields.length;i++){
+    const f=s.imageFields[i];
+    const val=String(rec[f.col]||'');
+    const info=findPhotoInfo(val);
+    const hasCrop=!!(f.studentCrops&&f.studentCrops[s.currentIdx]);
+    const isCrop=activeCropFieldId===f.id;
+    if(i>0) html+='<span style="color:var(--bd2);margin:0 4px">|</span>';
+    html+=`
+      <span class="cert-name-pill">👤 ${eH(val||'(chưa có)')}</span>
+      <span class="cert-arrow">→</span>
+      <span class="cert-photo-pill ${info?'ok':'miss'}" title="${info?eH(info.filename):'Không tìm thấy ảnh'}">
+        ${info?`📷 ${eH(info.filename)}`:'✗ Không tìm thấy ảnh'}
+      </span>
+      ${hasCrop?`<span class="cert-badge-crop">✂️ Đã crop</span>`:''}
+    `;
+  }
+  html+='</div>';
+  html+='<div class="cert-bar-actions">';
+  for(const f of s.imageFields){
+    const isCrop=activeCropFieldId===f.id;
+    html+=`<button class="btn btn-sm btn-pick ${isCrop?'live':'idle'}" onclick="toggleCropMode(${f.id})" title="Kéo ảnh trên canvas để căn chỉnh vùng hiển thị (riêng từng học sinh)">
+      ✂️ ${isCrop?'Thoát':'Sửa crop'}
+    </button>`;
+  }
+  // Show reset only if current student has custom crop
+  const anyCrop=s.imageFields.some(f=>f.studentCrops&&f.studentCrops[s.currentIdx]);
+  if(anyCrop) html+=`<button class="btn btn-sm" onclick="resetCropCurrent()" style="background:none;border:1px solid var(--bd2);color:var(--mu);font-size:11px" title="Xoá crop của học sinh này">↺ Reset</button>`;
+  html+='</div>';
+  bar.innerHTML=html;
+}
+
+function resetCropCurrent(){
+  const s=CS();
+  for(const f of s.imageFields){
+    if(f.studentCrops) delete f.studentCrops[s.currentIdx];
+  }
+  renderImageFields(); renderCanvas(); updateCertBar();
+}
+
+// ── MATCH TABLE ──
+function refreshNameColSel(){
+  const s=CS(); const sel=$i('nameColSel'); if(!sel) return;
+  sel.innerHTML='<option value="">— chọn cột —</option>'+s.cols.map(c=>`<option value="${eH(c)}" ${c===s.nameCol?'selected':''}>${eH(c)}</option>`).join('');
+}
+function setNameCol(col){
+  CS().nameCol=col;
+  if(col) autoMatchPhotos();
+  renderMatchTable();
+}
+function autoMatchPhotos(){
+  const s=CS(); if(!s.photos.size) return;
+  for(let i=0;i<s.records.length;i++){
+    if(s.matchMap[i]) continue; // don't overwrite manual
+    // Priority 1: restore từ tên file đã lưu trong session
+    const savedFile=s.matchMapFiles?.[i];
+    if(savedFile){
+      const k=normKey(savedFile);
+      if(s.photos.has(k)){
+        s.matchMap[i]={key:k,url:s.photos.get(k),filename:s.photoNames.get(k)||savedFile};
+        continue;
+      }
+    }
+    // Priority 2: khớp tên học sinh trong Excel
+    if(!s.nameCol) continue;
+    const val=String(s.records[i][s.nameCol]||'');
+    const info=findPhotoInfo(val);
+    if(info) s.matchMap[i]={key:info.key||normForFuzzy(val),url:info.url,filename:info.filename};
+  }
+  renderMatchTable(); renderCanvas(); updateCertBar();
+}
+function clearAllMatches(){
+  CS().matchMap={}; renderMatchTable(); renderCanvas(); updateCertBar();
+}
+function clearMatch(idx){
+  delete CS().matchMap[idx]; renderMatchTable(); renderCanvas(); updateCertBar();
+}
+function assignPhoto(recIdx, key, url, filename){
+  CS().matchMap[recIdx]={key,url,filename};
+  closePhotoSelector();
+  renderMatchTable(); renderCanvas(); updateCertBar(); renderImageFields();
+  if($i('matchFS').classList.contains('on')){renderMatchFSList();selectFSStudent(recIdx);}
+}
+
+// ── FULLSCREEN MATCH MODAL ──
+let matchFSActive=-1;
+
+function openMatchFS(){
+  $i('matchFS').classList.add('on');
+  renderMatchFSList();
+  selectFSStudent(CS().currentIdx);
+}
+function closeMatchFS(){
+  $i('matchFS').classList.remove('on');
+  renderMatchTable();
+}
+
+function renderMatchFSList(){
+  const s=CS(); const col=s.nameCol||'';
+  const total=s.records.length;
+  const matched=Object.keys(s.matchMap).length;
+  const badge=$i('matchFSBadge');
+  if(badge){badge.textContent=`${matched} / ${total} đã ghép`;badge.className='match-count-badge'+(matched===total&&total>0?' full':'');}
+  const list=$i('matchFSList'); if(!list) return;
+  list.innerHTML=s.records.map((rec,i)=>{
+    const name=String(rec[col]||'');
+    const m=s.matchMap[i];
+    const isAct=i===matchFSActive;
+    return `<div class="mfl-item${isAct?' active':''}" onclick="selectFSStudent(${i})">
+      <div class="mfl-idx">${i+1}</div>
+      ${m?`<img class="mfl-thumb" src="${m.url}" loading="lazy">`:`<div class="mfl-ph">👤</div>`}
+      <div class="mfl-info">
+        <div class="mfl-name" title="${eH(name)}">${eH(name||'—')}</div>
+        ${m?`<div class="mfl-fname" title="${eH(m.filename)}">${eH(m.filename)}</div>`:'<div class="mfl-fname" style="color:var(--red)">chưa ghép</div>'}
+      </div>
+      <div class="mfl-ok">${m?'<span style="color:var(--grn)">✓</span>':'<span style="color:var(--bd2)">—</span>'}</div>
+    </div>`;
+  }).join('');
+  // Scroll active row into view
+  const rows=list.querySelectorAll('.mfl-item');
+  if(rows[matchFSActive]) rows[matchFSActive].scrollIntoView({block:'nearest'});
+}
+
+function selectFSStudent(idx){
+  const s=CS();
+  if(idx<0||idx>=s.records.length) return;
+  matchFSActive=idx;
+  // Update nav + canvas
+  s.currentIdx=idx; updateNav(); renderCanvas();
+  // Highlight list row
+  $i('matchFSList').querySelectorAll('.mfl-item').forEach((el,i)=>{
+    el.classList.toggle('active',i===idx);
+  });
+  const row=$i('matchFSList').querySelectorAll('.mfl-item')[idx];
+  if(row) row.scrollIntoView({block:'nearest'});
+  // Render preview panel
+  const col=s.nameCol||''; const rec=s.records[idx]||{};
+  const name=String(rec[col]||'');
+  const m=s.matchMap[idx];
+  const total=s.records.length;
+  $i('matchFSPrev').innerHTML=`
+    <div class="mfp-no">#${idx+1} / ${total}</div>
+    <div class="mfp-name">${eH(name||'(chưa có tên)')}</div>
+    ${m
+      ?`<img class="mfp-photo" src="${m.url}" alt="${eH(name)}" onclick="openZoom('${m.url}')" title="Click để phóng to">`
+      :`<div class="mfp-ph"><div style="font-size:52px;opacity:.25">👤</div><div style="color:var(--mu);font-size:13px">Chưa ghép ảnh</div></div>`
+    }
+    ${m?`<div class="mfp-fname">${eH(m.filename)}</div>`:''}
+    <div class="mfp-navrow">
+      <button class="mfp-nav" onclick="selectFSStudent(${idx-1})" ${idx===0?'disabled':''}>‹</button>
+      <button class="mfp-change" onclick="openPhotoSelector(${idx})">${m?'🔄 Đổi ảnh':'＋ Chọn ảnh'}</button>
+      ${m?`<button class="mfp-clear" onclick="clearMatchFS(${idx})">✕ Bỏ ghép</button>`:''}
+      <button class="mfp-nav" onclick="selectFSStudent(${idx+1})" ${idx===total-1?'disabled':''}>›</button>
+    </div>
+    ${m?'<div style="font-size:11px;color:var(--mu);margin-top:-4px">Click vào ảnh để phóng to</div>':''}
+  `;
+}
+
+function clearMatchFS(idx){
+  delete CS().matchMap[idx];
+  renderMatchFSList(); selectFSStudent(idx); renderMatchTable(); updateCertBar();
+}
+
+// ── ZOOM ──
+function openZoom(url){
+  $i('imgZoomImg').src=url;
+  $i('imgZoomOv').classList.add('on');
+}
+function closeZoom(){ $i('imgZoomOv').classList.remove('on'); }
+document.addEventListener('keydown',e=>{
+  if($i('matchFS').classList.contains('on')){
+    if(e.key==='ArrowLeft'||e.key==='ArrowUp'){e.preventDefault();selectFSStudent(matchFSActive-1);}
+    if(e.key==='ArrowRight'||e.key==='ArrowDown'){e.preventDefault();selectFSStudent(matchFSActive+1);}
+    if(e.key==='Escape'){closeMatchFS();}
+  }
+  if($i('imgZoomOv').classList.contains('on')&&e.key==='Escape') closeZoom();
+});
+function renderMatchTable(){
+  const s=CS(); const tbody=$i('matchTbody'); if(!tbody) return;
+  const col=s.nameCol;
+  if(!s.records.length||!col){ tbody.innerHTML='<tr><td colspan="3" style="padding:10px;text-align:center;color:var(--mu);font-size:11px">Chọn cột họ tên và tải thư mục ảnh trước</td></tr>'; updateMatchStats(); return; }
+  tbody.innerHTML=s.records.map((rec,i)=>{
+    const name=String(rec[col]||'');
+    const m=s.matchMap[i];
+    const isCur=i===s.currentIdx;
+    return `<tr class="${isCur?'current-row':''}" onclick="navigateTo(${i})">
+      <td class="mt-idx">${i+1}</td>
+      <td class="mt-name" title="${eH(name)}">${eH(name||'—')}</td>
+      <td>${m
+        ?`<div class="mt-photo" onclick="event.stopPropagation();openPhotoSelector(${i})" title="Click để đổi ảnh"><img class="mt-thumb" src="${m.url}"><span class="mt-fname" title="${eH(m.filename)}">${eH(m.filename)}</span><button class="mt-clear" onclick="event.stopPropagation();clearMatch(${i})" title="Xoá ghép">✕</button></div>`
+        :`<span class="mt-empty" onclick="event.stopPropagation();openPhotoSelector(${i})">＋ Chọn ảnh</span>`
+      }</td>
+    </tr>`;
+  }).join('');
+  updateMatchStats();
+  // Scroll current row into view
+  const curRow=tbody.querySelector('.current-row');
+  if(curRow) curRow.scrollIntoView({block:'nearest'});
+}
+function updateMatchStats(){
+  const s=CS(); const badge=$i('matchCountBadge'); if(!badge) return;
+  const total=s.records.length;
+  const matched=Object.keys(s.matchMap).length;
+  badge.textContent=`${matched} / ${total} đã ghép`;
+  badge.className='match-count-badge'+(matched===total&&total>0?' full':'');
+}
+function navigateTo(idx){
+  const s=CS(); s.currentIdx=idx;
+  updateNav(); renderTextFields(); renderCanvas(); updateFnPreview(); renderImageFields();
+}
+
+// ── PHOTO SELECTOR ──
+let pselTargetIdx = -1;
+function openPhotoSelector(recIdx){
+  const s=CS(); pselTargetIdx=recIdx;
+  const name=String((s.records[recIdx]||{})[s.nameCol||s.cols[0]]||`Học sinh ${recIdx+1}`);
+  $i('pselStudentName').textContent=name;
+  $i('pselSearch').value='';
+  renderPhotoGrid('');
+  $i('pselOv').classList.add('on');
+}
+function closePhotoSelector(){ $i('pselOv').classList.remove('on'); }
+function renderPhotoGrid(filter){
+  const s=CS();
+  const q=(filter||'').toLowerCase();
+  // Build reverse map: url → name of assignee
+  const assigned={};
+  for(const[idx,m]of Object.entries(s.matchMap)){
+    if(+idx!==pselTargetIdx) assigned[m.url]=s.records[+idx]?.[s.nameCol||'']||`HS ${+idx+1}`;
+  }
+  const currentUrl=s.matchMap[pselTargetIdx]?.url;
+  const items=[...s.photoNames.entries()]
+    .filter(([k,fn])=>!q||fn.toLowerCase().includes(q)||normForFuzzy(fn).includes(q))
+    .sort((a,b)=>a[1].localeCompare(b[1]));
+  $i('pselGrid').innerHTML=items.map(([key,filename])=>{
+    const url=s.photos.get(key);
+    const isSelected=url===currentUrl;
+    const assignee=assigned[url];
+    return `<div class="psel-item${assignee?' assigned':''}${isSelected?' selected':''}"
+      onclick="assignPhoto(${pselTargetIdx},'${eH(key)}','${url}','${eH(filename)}')"
+      title="${eH(filename)}${assignee?' (đã gán cho '+eH(assignee)+')':''}">
+      <img class="psel-thumb" src="${url}" loading="lazy">
+      <div class="psel-name">${eH(filename)}</div>
+      ${assignee?`<div class="psel-assigned-badge">${eH(assignee)}</div>`:''}
+    </div>`;
+  }).join('');
+  if(!items.length) $i('pselGrid').innerHTML='<div style="color:var(--mu);font-size:11px;text-align:center;padding:20px;grid-column:1/-1">Không tìm thấy ảnh</div>';
+}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$i('pselOv').classList.contains('on')) closePhotoSelector();});
+
+// ── D-PAD for image frame (all students) ──
+// ── AUTO-FIT: quét pixel trong suốt của template → đặt khung ảnh vào đúng lỗ khoét ──
+async function autoFitToHole(){
+  const s=CS();
+  if(!s.templateImg){alert('Chưa tải template!');return;}
+  if(!s.imageFields.length){alert('Chưa có trường ảnh nào!');return;}
+
+  // Quét ở độ phân giải nhỏ (~400px) để nhanh
+  const SCAN=400;
+  const ratio=SCAN/s.tW;
+  const sw=SCAN, sh=Math.round(s.tH*ratio);
+  const tmp=document.createElement('canvas');
+  tmp.width=sw; tmp.height=sh;
+  const tCtx=tmp.getContext('2d',{willReadFrequently:true});
+  tCtx.drawImage(s.templateImg,0,0,sw,sh);
+  const d=tCtx.getImageData(0,0,sw,sh).data;
+
+  // Tìm bounding box của vùng trong suốt (alpha < 40)
+  let x0=sw,x1=0,y0=sh,y1=0,found=false;
+  for(let y=0;y<sh;y++){
+    for(let x=0;x<sw;x++){
+      if(d[(y*sw+x)*4+3]<40){
+        if(x<x0)x0=x; if(x>x1)x1=x;
+        if(y<y0)y0=y; if(y>y1)y1=y;
+        found=true;
+      }
+    }
+  }
+  if(!found){alert('Không tìm thấy vùng trong suốt trong template!\nĐảm bảo template là file PNG có lỗ khoét (alpha=0).');return;}
+
+  // Scale về tọa độ thực của template, thêm padding nhỏ
+  const pad=Math.round(3/ratio);
+  const f=s.imageFields[0];
+  f.x=Math.max(0,Math.round(x0/ratio)-pad);
+  f.y=Math.max(0,Math.round(y0/ratio)-pad);
+  f.w=Math.round((x1-x0)/ratio)+pad*2;
+  f.h=Math.round((y1-y0)/ratio)+pad*2;
+  // Nếu lỗ gần vuông → tự bật hình tròn
+  const aspect=f.w/f.h;
+  if(aspect>0.85&&aspect<1.18) f.circle=true;
+  renderImageFields(); renderCanvas(); updateCertBar();
+}
+
+function nudgeIF(id, dx, dy){
+  const f=CS().imageFields.find(x=>x.id===id); if(!f) return;
+  f.x=Math.max(0,f.x+dx); f.y=Math.max(0,f.y+dy);
+  renderImageFields(); renderCanvas();
+}
+function setIFStep(v){ CS().ifStep=v; renderImageFields(); }
+
+// ── D-PAD for per-student crop ──
+function nudgeCrop(id, dx, dy){
+  const s=CS(); const f=s.imageFields.find(x=>x.id===id); if(!f) return;
+  if(!f.studentCrops) f.studentCrops={};
+  const cur=f.studentCrops[s.currentIdx]||{x:0,y:0};
+  f.studentCrops[s.currentIdx]={x:cur.x+dx, y:cur.y+dy};
+  renderImageFields(); renderCanvas(); updateCertBar();
+}
+function setCropStep(v){ CS().cropStep=v; renderImageFields(); }
+
+function setScale(v){CS().previewScale=v;$i('scaleLabel').textContent=Math.round(v*100)+'%';invalidateTplCache();renderCanvas();}
 function refreshFNSel(){ refreshFNArea(); }
 function refreshUI(){
   if(activeTab==='pdf') return;
@@ -1274,6 +2206,7 @@ function refreshUI(){
   $i('expBtn').disabled=!ready;
   $i('expZipBtn').disabled=!ready;
   updateNav();
+  updateCertBar();
   if(ready) renderCanvas();
 }
 
@@ -1345,6 +2278,7 @@ async function exportToFolder() {
   let errors = 0;
 
   for (let i = 0; i < total; i++) {
+    s.currentIdx = i;
     const rec = s.records[i];
     const blob = await renderRecord(canvas, rec);
     if (!blob) { errors++; continue; }
@@ -1382,6 +2316,7 @@ async function exportToZip() {
   const total = s.records.length;
 
   for (let i = 0; i < total; i++) {
+    s.currentIdx = i;
     const rec = s.records[i];
     const blob = await renderRecord(canvas, rec);
     if (!blob) continue;
@@ -1838,6 +2773,136 @@ try{
   const isLight=document.body.classList.contains('light');
   $i('themeBtn').textContent=isLight?'🌙 Tối':'☀️ Sáng';
 }catch{}
+
+// ══════════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════════
+let _toastTimer=null;
+function showToast(msg,duration=4000){
+  const t=$i('toast'); t.textContent=msg; t.classList.add('on');
+  clearTimeout(_toastTimer); _toastTimer=setTimeout(()=>t.classList.remove('on'),duration);
+}
+
+// ══════════════════════════════════════════════
+//  SAVE / LOAD SESSION (.pmSession)
+// ══════════════════════════════════════════════
+async function blobToDataUrl(src){
+  if(!src||src.startsWith('data:')) return src;
+  try{
+    const resp=await fetch(src); const blob=await resp.blob();
+    return new Promise(res=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.readAsDataURL(blob);});
+  }catch{return null;}
+}
+
+async function saveSession(){
+  const s=CS();
+  if(!s.templateImg&&!s.records.length){showToast('⚠️ Chưa có dữ liệu để lưu!');return;}
+  const btn=$i('saveSessBtn'); btn.textContent='⏳ Đang lưu…'; btn.disabled=true;
+  try{
+    const sess={version:2,savedAt:new Date().toISOString(),tab:activeTab,fieldCtr};
+    for(const tab of ['inv','cert']){
+      const st=STATES[tab];
+      if(!st.templateImg&&!st.records.length) continue;
+      // matchMap → chỉ lưu filename, không lưu blob URL
+      const matchMapFiles={};
+      for(const[k,v] of Object.entries(st.matchMap)) if(v?.filename) matchMapFiles[k]=v.filename;
+      sess[tab]={
+        tplDataUrl: st.templateImg ? await blobToDataUrl(st.templateImg.src) : null,
+        tW:st.tW, tH:st.tH,
+        records:st.records, cols:st.cols, nameCol:st.nameCol,
+        textFields:st.textFields,
+        imageFields:st.imageFields,
+        matchMapFiles,
+        currentIdx:st.currentIdx, previewScale:st.previewScale,
+        fmt:st.fmt, fnTemplate:st.fnTemplate||'',
+        noAccent:st.noAccent, spaceUnderscore:st.spaceUnderscore,
+        ifStep:st.ifStep||5, cropStep:st.cropStep||5,
+      };
+    }
+    const blob=new Blob([JSON.stringify(sess)],{type:'application/json'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=`PrintMerge_${new Date().toISOString().slice(0,10)}.pmSession`;
+    a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    showToast('✅ Đã lưu phiên làm việc!');
+  }catch(e){showToast('❌ Lỗi lưu phiên: '+e.message,5000);}
+  finally{btn.textContent='💾 Lưu phiên';btn.disabled=false;}
+}
+
+function loadSessionFile(inp){
+  const file=inp.files[0]; inp.value='';
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=async e=>{
+    try{ await loadSession(JSON.parse(e.target.result)); }
+    catch(err){ showToast('❌ Không đọc được file phiên: '+err.message,5000); }
+  };
+  r.readAsText(file);
+}
+
+async function loadSession(sess){
+  if(!sess.version||sess.version<2){showToast('⚠️ File phiên cũ (v1) không tương thích, vui lòng lưu lại.',5000);return;}
+  fieldCtr=Math.max(fieldCtr, sess.fieldCtr||0);
+
+  for(const tab of ['inv','cert']){
+    const data=sess[tab]; if(!data) continue;
+    const st=STATES[tab];
+    // Giữ lại ảnh đang có (nếu người dùng đã upload trước)
+    const keptPhotos=st.photos; const keptPhotoNames=st.photoNames;
+    Object.assign(st,mkState());
+    st.photos=keptPhotos; st.photoNames=keptPhotoNames;
+
+    st.records=data.records||[]; st.cols=data.cols||[]; st.nameCol=data.nameCol||'';
+    st.textFields=(data.textFields||[]).map(f=>({...f}));
+    st.imageFields=(data.imageFields||[]).map(f=>({...f,studentCrops:{...(f.studentCrops||{})}}));
+    st.matchMapFiles=data.matchMapFiles||{};
+    st.currentIdx=Math.min(data.currentIdx||0,Math.max(0,(data.records||[]).length-1));
+    st.previewScale=data.previewScale||0.55;
+    st.fmt=data.fmt||'jpeg'; st.fnTemplate=data.fnTemplate||'';
+    st.noAccent=data.noAccent!==false; st.spaceUnderscore=data.spaceUnderscore!==false;
+    st.ifStep=data.ifStep||5; st.cropStep=data.cropStep||5;
+
+    // Khôi phục template từ base64
+    if(data.tplDataUrl){
+      try{
+        const img=await loadImg(data.tplDataUrl);
+        st.templateImg=img; st.tW=data.tW||img.naturalWidth; st.tH=data.tH||img.naturalHeight;
+        invalidateTplCache();
+      }catch(e){console.error('Template restore error',e);}
+    }
+
+    // Khớp ngay với ảnh đang có (nếu đã upload sẵn)
+    if(st.photos.size>0){
+      for(const[idx,filename] of Object.entries(st.matchMapFiles)){
+        const k=normKey(filename);
+        if(st.photos.has(k)) st.matchMap[+idx]={key:k,url:st.photos.get(k),filename:st.photoNames.get(k)||filename};
+      }
+    }
+  }
+
+  switchTab(sess.tab||'cert');
+  refreshColChips(); refreshFNSel();
+  renderTextFields(); renderImageFields();
+  if(sess.tab==='cert'||activeTab==='cert'){ refreshNameColSel(); renderMatchTable(); }
+  updateNav(); updateCertBar(); renderCanvas();
+
+  // Cập nhật các UI input đồng bộ
+  const sc=CS().previewScale;
+  $i('scaleRange').value=Math.round(sc*100);
+  $i('scaleLabel').textContent=Math.round(sc*100)+'%';
+  if(CS().templateImg) $i('tplZone').classList.add('ok');
+  if(CS().records.length) $i('xlsZone').classList.add('ok');
+
+  const total=Object.keys(CS().matchMapFiles).length;
+  const restored=Object.keys(CS().matchMap).length;
+  if(total>0&&restored<total){
+    showToast(`✅ Đã khôi phục phiên!\n${restored}/${total} ảnh đã khớp — upload thư mục ảnh để khôi phục ${total-restored} ảnh còn lại`,6000);
+  }else if(total>0){
+    showToast(`✅ Đã khôi phục toàn bộ phiên! (${total} ảnh)`,4000);
+  }else{
+    showToast('✅ Đã khôi phục phiên làm việc!');
+  }
+}
 </script>
 <footer>
   <div class="f-left">
@@ -1856,6 +2921,6 @@ try{
     <span class="f-ver">v3.7</span>
   </div>
 </footer>
-
+<div class="toast" id="toast"></div>
 </body>
 </html>
