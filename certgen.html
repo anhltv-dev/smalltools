@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@400;600;700&family=Raleway:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&family=Josefin+Sans:wght@400;600;700&family=Nunito:wght@400;600;700&family=Bebas+Neue&family=Playfair+Display+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0d0e14;--sf:#13141c;--sf2:#1a1b27;--sf3:#21223a;
@@ -110,6 +111,14 @@ footer .f-ver{background:var(--sf3);border:1px solid var(--bd);color:var(--mu);b
 .cb input{accent-color:var(--ac);cursor:pointer}.cb:hover{color:var(--tx)}
 .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .sep{height:1px;background:var(--bd);margin:5px 0}
+.preset-row{display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--bd)}
+.preset-row:last-child{border-bottom:none}
+.preset-name{font-size:12.5px;font-weight:600;color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.preset-meta{font-size:10.5px;color:var(--mu);margin-top:1px}
+.preset-apply{font-size:11px;padding:3px 9px;background:var(--sf3);border:1px solid var(--bd2);border-radius:5px;color:var(--tx);cursor:pointer;white-space:nowrap;transition:.12s}
+.preset-apply:hover{background:var(--ac);color:#000;border-color:var(--ac)}
+.preset-del{font-size:13px;padding:2px 5px;background:none;border:none;color:var(--mu);cursor:pointer;border-radius:4px;transition:.12s}
+.preset-del:hover{color:var(--red);background:rgba(240,120,120,.1)}
 .font-prev{margin-top:3px;font-size:15px;color:var(--tx);opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tpl-hint{font-size:10px;color:var(--mu);margin-bottom:5px}
 .col-chips{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px}
@@ -204,6 +213,13 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 .toast{position:fixed;bottom:56px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--sf);border:1px solid var(--bd2);border-radius:8px;padding:10px 20px;font-size:12px;color:var(--tx);box-shadow:0 6px 28px rgba(0,0,0,.45);z-index:9999;opacity:0;pointer-events:none;transition:.25s;max-width:500px;text-align:center;white-space:pre-line}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* Save Session Modal */
+.save-ov{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:910;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.18s}
+.save-ov.on{opacity:1;pointer-events:auto}
+.save-box{background:var(--sf);border:1px solid var(--bd);border-radius:14px;width:min(420px,94vw);display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.5);transform:translateY(14px);transition:.2s}
+.save-ov.on .save-box{transform:translateY(0)}
+/* Restore banner */
+.restore-banner{margin-bottom:10px;padding:10px 13px;border-radius:9px;background:rgba(124,58,237,.09);border:1px solid rgba(124,58,237,.28);font-size:13px}
 /* Help Modal */
 .help-ov{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.2s}
 .help-ov.on{opacity:1;pointer-events:auto}
@@ -389,6 +405,31 @@ body.light .if-match-row{background:var(--sf)}
   🎯 Đang chọn vị trí — Click vào ảnh để đặt tọa độ &nbsp;|&nbsp; <kbd style="background:rgba(0,0,0,.3);padding:1px 5px;border-radius:3px">Esc</kbd> để huỷ
 </div>
 
+<!-- ══ SAVE SESSION MODAL ══ -->
+<div class="save-ov" id="saveSessionOv" onclick="if(event.target===this)closeSaveModal()">
+  <div class="save-box">
+    <div class="help-head">
+      <h2>💾 Lưu phiên làm việc</h2>
+      <button class="help-close" onclick="closeSaveModal()">✕</button>
+    </div>
+    <div style="padding:18px 20px">
+      <div class="fg">
+        <label style="font-size:13px">Tên phiên (để dễ nhớ, dùng khi mở lại)</label>
+        <input type="text" id="sessionNameInput"
+          placeholder="VD: Lớp 12A — Chứng nhận học sinh giỏi 2026"
+          style="width:100%;margin-top:5px"
+          maxlength="80"
+          onkeydown="if(event.key==='Enter')confirmSaveSession()">
+        <div style="color:var(--mu);font-size:11.5px;margin-top:5px">Để trống → tên file tự động theo ngày</div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button class="btn" style="background:var(--sf2);border:1px solid var(--bd2);color:var(--mu)" onclick="closeSaveModal()">Hủy</button>
+        <button class="btn cert" onclick="confirmSaveSession()">💾 Lưu xuống máy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ HELP MODAL ══ -->
 <div class="help-ov" id="helpOv" onclick="if(event.target===this)closeHelp()">
   <div class="help-box">
@@ -532,6 +573,11 @@ body.light .if-match-row{background:var(--sf)}
       <div class="uinfo" id="xlsInfo"></div>
 
       <div id="photoSection" style="display:none">
+        <!-- Hiển thị khi tải phiên còn thiếu ảnh -->
+        <div class="restore-banner" id="photoRestoreBanner" style="display:none">
+          <div style="font-weight:600;color:var(--cert);margin-bottom:7px">📷 <span id="photoRestoreMsg">Thiếu ảnh — chọn lại thư mục để khôi phục</span></div>
+          <button class="btn cert" onclick="pickPhotoFolderForRestore()" style="font-size:12px;padding:6px 14px">📁 Chọn thư mục ảnh để khôi phục</button>
+        </div>
         <div class="folder-tab-bar">
           <button class="folder-tab active" id="tabFolderMode" onclick="setPhotoMode('folder')">📁 Upload thư mục lớp</button>
           <button class="folder-tab" id="tabFilesMode" onclick="setPhotoMode('files')">🖼️ Chọn ảnh riêng lẻ</button>
@@ -558,6 +604,26 @@ body.light .if-match-row{background:var(--sf)}
           <div class="uinfo" id="photoInfo"></div>
         </div>
       </div>
+    </div>
+
+    <!-- LAYOUT PRESETS -->
+    <div class="sec" id="layoutPresetsSec">
+      <div class="stitle n" style="justify-content:space-between;margin-bottom:8px">
+        <span>📐 Bố cục đã lưu</span>
+        <span style="display:flex;gap:4px">
+          <label title="Import bố cục từ file JSON" style="cursor:pointer;font-size:10.5px;color:var(--mu);padding:2px 7px;border:1px solid var(--bd2);border-radius:5px;transition:.12s;display:flex;align-items:center">
+            <input type="file" accept=".json" style="display:none" onchange="importLayoutPresets(this)">
+            ⬆️ Import
+          </label>
+          <button onclick="exportLayoutPresets()" title="Xuất tất cả bố cục ra file JSON để chia sẻ / dùng trên máy khác" style="font-size:10.5px;color:var(--mu);padding:2px 7px;border:1px solid var(--bd2);border-radius:5px;background:none;cursor:pointer;transition:.12s">⬇️ Export</button>
+        </span>
+      </div>
+      <div id="presetListEl" style="margin-bottom:8px;max-height:200px;overflow-y:auto"></div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="presetNameInput" placeholder="Tên bố cục…  VD: Chứng thư THCS 9A" style="flex:1;font-size:12px">
+        <button onclick="saveLayoutPreset()" style="white-space:nowrap;padding:7px 11px;background:var(--ac);color:#000;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;transition:.12s">💾 Lưu</button>
+      </div>
+      <div style="font-size:11px;color:var(--mu);margin-top:5px">Lưu vị trí, font, màu của tất cả trường văn bản → tái dùng cho lớp khác</div>
     </div>
 
     <!-- STEP 2: TEXT FIELDS -->
@@ -783,6 +849,18 @@ body.light .if-match-row{background:var(--sf)}
           style="width:100%;justify-content:center;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);font-size:12px;padding:7px">
           🗜️ Xuất ZIP (nếu trình duyệt không hỗ trợ thư mục)
         </button>
+        <div id="checklistClassWrap" style="display:none;margin-top:10px">
+          <div class="fg" style="margin-bottom:0">
+            <label style="font-size:12px;color:var(--cert)">Tên lớp (hiện lên tiêu đề PDF)</label>
+            <input type="text" id="checklistClassName"
+              placeholder="VD: 9A1, 12A2, Lớp Toán..."
+              style="margin-top:4px;font-size:12.5px">
+          </div>
+        </div>
+        <button class="btn cert" id="expChecklistBtn" onclick="exportChecklistPDF()" disabled
+          style="display:none;width:100%;justify-content:center;margin-top:7px;background:linear-gradient(135deg,#7c3aed,#a855f7);border:none;color:#fff;font-size:12.5px;padding:9px;gap:6px">
+          📋 Xuất danh sách kiểm tra ảnh (PDF)
+        </button>
       </div>
 
       <!-- PDF export controls -->
@@ -822,15 +900,25 @@ const FONTS = [
   {label:'Marck Script — Viết tay đậm',      v:'Marck Script',   note:'⚠️ Tiếng Việt một phần'},
   {label:'Sacramento — Mảnh thanh thoát',    v:'Sacramento',     note:'⚠️ Tiếng Việt một phần'},
   {label:'Lobster — Đậm nét chữ ký',         v:'Lobster',        note:'⚠️ Tiếng Việt một phần'},
-  // Font bằng khen / giấy khen / chứng nhận
-  {label:'── Font bằng khen / giấy khen ──', v:'Times New Roman',    note:''},
-  {label:'Playfair Display — Tiêu đề bằng khen, sang trọng',      v:'Playfair Display',   note:'✅ Tiếng Việt tốt'},
-  {label:'Lora — Nội dung giấy khen, thư pháp nhẹ nhàng',        v:'Lora',               note:'✅ Tiếng Việt tốt'},
-  {label:'Noto Serif — Chuẩn mực, hỗ trợ hoàn hảo',              v:'Noto Serif',         note:'✅ Tiếng Việt hoàn hảo'},
-  {label:'EB Garamond — Cổ điển học thuật',                        v:'EB Garamond',        note:'✅ Tiếng Việt tốt'},
-  {label:'Cormorant Garamond — Lịch sự, quý phái',                v:'Cormorant Garamond', note:'✅ Tiếng Việt tốt'},
-  {label:'Merriweather — Trang trọng, dễ đọc in báo',             v:'Merriweather',       note:'✅ Tiếng Việt tốt'},
-  {label:'Libre Baskerville — Chính thức, học thuật',              v:'Libre Baskerville',  note:'✅ Tiếng Việt tốt'},
+  // Font bằng khen / giấy khen / chứng nhận — serif cổ điển
+  {label:'── Font Giấy chứng nhận — Trang trọng cổ điển ──', v:'Times New Roman', note:''},
+  {label:'Playfair Display — Tiêu đề sang trọng, học thuật',      v:'Playfair Display',      note:'✅ Tiếng Việt tốt'},
+  {label:'Playfair Display SC — Chữ hoa nhỏ, trang trọng',        v:'Playfair Display SC',   note:'✅ Tiếng Việt tốt'},
+  {label:'Lora — Thư pháp nhẹ nhàng, dễ đọc',                    v:'Lora',                  note:'✅ Tiếng Việt tốt'},
+  {label:'Cormorant Garamond — Quý phái, tinh tế',                v:'Cormorant Garamond',    note:'✅ Tiếng Việt tốt'},
+  {label:'EB Garamond — Cổ điển học thuật',                        v:'EB Garamond',           note:'✅ Tiếng Việt tốt'},
+  {label:'Merriweather — Trang trọng, dễ đọc in báo',             v:'Merriweather',          note:'✅ Tiếng Việt tốt'},
+  {label:'Libre Baskerville — Chính thức, học thuật',              v:'Libre Baskerville',     note:'✅ Tiếng Việt tốt'},
+  {label:'Noto Serif — Chuẩn mực, hỗ trợ hoàn hảo',              v:'Noto Serif',            note:'✅ Tiếng Việt hoàn hảo'},
+  {label:'Cinzel — La Mã cổ điển, danh giá',                      v:'Cinzel',                note:'⚠️ Chỉ Latin (tiêu đề ngắn)'},
+  // Font hiện đại cho giấy chứng nhận
+  {label:'── Font Giấy chứng nhận — Hiện đại chuyên nghiệp ──', v:'Arial', note:''},
+  {label:'Montserrat — Hiện đại, chuyên nghiệp, phổ biến nhất',  v:'Montserrat',            note:'✅ Tiếng Việt tốt'},
+  {label:'Poppins — Hình học sạch sẽ, trẻ trung',                v:'Poppins',               note:'✅ Tiếng Việt tốt'},
+  {label:'Raleway — Thanh lịch, nét mảnh tinh tế',               v:'Raleway',               note:'✅ Tiếng Việt tốt'},
+  {label:'Nunito — Tròn mềm mại, thân thiện',                    v:'Nunito',                note:'✅ Tiếng Việt tốt'},
+  {label:'Josefin Sans — Hình học Art Deco, sang trọng',         v:'Josefin Sans',          note:'✅ Tiếng Việt tốt'},
+  {label:'Bebas Neue — Đậm nét, mạnh mẽ (tiêu đề lớn)',          v:'Bebas Neue',            note:'⚠️ Chỉ Latin (tiêu đề)'},
 ];
 
 const loadedFonts = new Set(['Arial','Times New Roman']);
@@ -861,6 +949,7 @@ function mkState() {
     fmt:'jpeg', filenameCol:'', filePrefix:'',
     fnTemplate:'', noAccent:true, spaceUnderscore:true,
     nudgeStep:5, ifStep:5, cropStep:5,
+    photoFolderName:'', sessionName:'',
   };
 }
 const STATES = {inv:mkState(), cert:mkState()};
@@ -885,9 +974,11 @@ function switchTab(tab) {
   $i('invCertExpBar').style.display = isPdf?'none':'block';
   $i('pdfExpBar').style.display     = isPdf?'block':'none';
   if(isPdf){ renderPDFFields(); refreshPDFUI(); return; }
-  $i('photoSection').style.display = isCert?'block':'none';
-  $i('matchSec').style.display     = isCert?'block':'none';
-  $i('imgFieldsSec').style.display  = isCert?'block':'none';
+  $i('photoSection').style.display    = isCert?'block':'none';
+  $i('matchSec').style.display        = isCert?'block':'none';
+  $i('imgFieldsSec').style.display    = isCert?'block':'none';
+  $i('expChecklistBtn').style.display    = isCert?'flex':'none';
+  $i('checklistClassWrap').style.display = isCert?'block':'none';
   $i('expStepNum').textContent = isCert?'5':'3';
   const tfTitle = $i('tfTitle');
   tfTitle.className = 'stitle ' + (isCert?'cert':'inv');
@@ -908,6 +999,7 @@ function switchTab(tab) {
   refreshFNSel();
   refreshUI();
   updateCertBar();
+  renderPresetList(); // cập nhật danh sách bố cục theo tab hiện tại
 }
 
 // ══════════════════════════════════════════════
@@ -979,11 +1071,16 @@ $i('xlsInput').addEventListener('change', e=>{
   r.readAsArrayBuffer(f);
 });
 
-$i('photoInput').addEventListener('change', e=>{
+$i('photoInput').addEventListener('change', async e=>{
   const files=Array.from(e.target.files);
   CS().photos.clear(); CS().photoNames.clear();
-  files.forEach(f=>{const k=normKey(f.name);CS().photos.set(k,URL.createObjectURL(f));CS().photoNames.set(k,f.name);});
   $i('photoZone').classList.add('ok');
+  $i('photoInfo').textContent=`⏳ Đang tối ưu ${files.length} ảnh...`;
+  for(const f of files){
+    const k=normKey(f.name);
+    const url=await compressPhotoFile(f,1600);
+    CS().photos.set(k,url); CS().photoNames.set(k,f.name);
+  }
   $i('photoInfo').textContent=`✓ Đã tải ${files.length} ảnh`;
   if(activeTab==='cert'){
     if(CS().imageFields.length===0 && CS().records.length){
@@ -1054,12 +1151,20 @@ $i('folderInput').addEventListener('change', async e=>{
     loadXlsBuffer(buf, xf.name);
   }
 
-  // Load photos
+  // Load photos (compress to max 1600px for performance)
   CS().photos.clear(); CS().photoNames.clear();
-  imgFiles.forEach(f=>{const k=normKey(f.name);CS().photos.set(k,URL.createObjectURL(f));CS().photoNames.set(k,f.name);});
-
+  // Lưu tên thư mục để gợi ý khi khôi phục phiên
+  const folderName = imgFiles[0]?.webkitRelativePath?.split('/')[0] || allFiles[0]?.webkitRelativePath?.split('/')[0] || '';
+  CS().photoFolderName = folderName;
   const zone=$i('folderZone');
   zone.classList.add('ok');
+  zone.querySelector('div').textContent=`⏳ Đang tối ưu ${imgFiles.length} ảnh...`;
+  for(const f of imgFiles){
+    const k=normKey(f.name);
+    const url=await compressPhotoFile(f,1600);
+    CS().photos.set(k,url); CS().photoNames.set(k,f.name);
+  }
+  $i('photoRestoreBanner').style.display='none'; // ẩn banner khôi phục nếu đã chọn thư mục mới
   zone.querySelector('div').textContent=`✓ ${allFiles.length} file — ${xlsFiles.length} Excel, ${imgFiles.length} ảnh`;
 
   renderCanvas();
@@ -1720,6 +1825,30 @@ function loadImg(src){
     i.onerror=rej; i.src=src;
   });
 }
+// Compress photo for UI use: resize to maxPx longest side, JPEG 88%
+// Keeps images clear while reducing memory & rendering load on weak machines
+async function compressPhotoFile(file, maxPx = 1600) {
+  const origUrl = URL.createObjectURL(file);
+  try {
+    const img = await loadImg(origUrl);
+    const { naturalWidth: w, naturalHeight: h } = img;
+    if (w <= maxPx && h <= maxPx) return origUrl; // already small enough
+    const scale = maxPx / Math.max(w, h);
+    const cv = document.createElement('canvas');
+    cv.width  = Math.round(w * scale);
+    cv.height = Math.round(h * scale);
+    cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+    return await new Promise(res => cv.toBlob(b => {
+      URL.revokeObjectURL(origUrl);
+      _imgCache.delete(origUrl); // remove stale cache entry
+      const newUrl = URL.createObjectURL(b);
+      res(newUrl);
+    }, 'image/jpeg', 0.88));
+  } catch {
+    return origUrl; // fallback: keep original on error
+  }
+}
+
 // Template bitmap cache — pre-scaled per zoom level, avoids re-scaling every frame
 let _tplCache=null; // {ref, sc, bm}
 async function getTplDrawable(img, sc){
@@ -2205,6 +2334,7 @@ function refreshUI(){
   $i('cwrap').style.display=ready?'inline-block':'none';
   $i('expBtn').disabled=!ready;
   $i('expZipBtn').disabled=!ready;
+  $i('expChecklistBtn').disabled=!ready;
   updateNav();
   updateCertBar();
   if(ready) renderCanvas();
@@ -2213,6 +2343,36 @@ function refreshUI(){
 // ══════════════════════════════════════════════
 //  EXPORT HELPERS
 // ══════════════════════════════════════════════
+
+// Lưu PDF với hộp thoại chọn thư mục (Chrome/Edge).
+// Fallback tự động download nếu trình duyệt không hỗ trợ.
+// Trả về tên file đã lưu, hoặc null nếu người dùng hủy.
+async function savePDFWithPicker(doc, suggestedName) {
+  if (window.showSaveFilePicker) {
+    try {
+      const fh = await window.showSaveFilePicker({
+        suggestedName,
+        startIn: 'desktop',
+        types: [{ description: 'PDF', accept: { 'application/pdf': ['.pdf'] } }],
+      });
+      const blob = doc.output('blob');
+      const w = await fh.createWritable();
+      await w.write(blob);
+      await w.close();
+      return fh.name;
+    } catch (e) {
+      if (e.name === 'AbortError') return null; // người dùng bấm Hủy
+      // Lỗi khác → fallback download
+      doc.save(suggestedName);
+      return suggestedName;
+    }
+  } else {
+    // Firefox / Safari → download bình thường vào Downloads
+    doc.save(suggestedName);
+    return suggestedName;
+  }
+}
+
 function getExportParams() {
   return {
     fmt: $i('fmtSel').value,
@@ -2338,6 +2498,257 @@ async function exportToZip() {
 
   endExport(`✅ Hoàn tất! Đã xuất ${total} file → ${zipName}.zip`);
   $i('progLbl').innerHTML += `<br><span style="color:var(--ac)">⚠️ Trước khi giải nén: chuột phải file ZIP → Properties → tích Unblock → OK</span>`;
+}
+
+// ══════════════════════════════════════════════
+//  XUẤT DANH SÁCH KIỂM TRA ẢNH (PDF)
+// ══════════════════════════════════════════════
+async function exportChecklistPDF() {
+  const s = CS();
+  if (!s.records.length) { alert('Chưa có dữ liệu Excel!'); return; }
+
+  const btn = $i('expChecklistBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Đang tạo PDF...';
+
+  try {
+    const { jsPDF } = window.jspdf;
+
+    // ── Layout constants (mm) ──
+    const PW = 210, PH = 297;
+    const MX = 12, MY = 12;          // margins
+    const TW = PW - 2 * MX;          // 186 mm table width
+    const C1 = 18, C2 = 72;          // STT=18, Tên=72, Ảnh=96 mm
+    const C3 = TW - C1 - C2;
+    const className = ($i('checklistClassName').value||'').trim().toUpperCase();
+    const TITLE_H = 9, HDR_H = 10, ROW_H = 44; // TITLE_H 9mm: title sát header hơn
+    const S = 8;                      // px per mm — high-res for crisp zoom in PDF
+
+    const ROWS_PER_FIRST = Math.floor((PH - 2 * MY - TITLE_H - HDR_H) / ROW_H);
+    const ROWS_PER_REST  = Math.floor((PH - 2 * MY - HDR_H) / ROW_H);
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // ── Render one page-worth of rows to a canvas → JPEG data URL ──
+    async function renderPageCanvas(slice, startGlobalIdx, isFirstPage) {
+      const numRows = slice.length;
+      const cvH_mm  = (isFirstPage ? TITLE_H + HDR_H : HDR_H) + numRows * ROW_H;
+      const cv = document.createElement('canvas');
+      cv.width  = TW * S;
+      cv.height = cvH_mm * S;
+      const ctx = cv.getContext('2d');
+
+      // White bg
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, cv.width, cv.height);
+
+      let yPx = 0;
+
+      // Title (first page only)
+      if (isFirstPage) {
+        const tH = TITLE_H * S;
+        const titleText = 'DANH SÁCH KIỂM TRA ẢNH ĐÍNH KÈM' + (className ? ' ' + className : '');
+        ctx.fillStyle = '#1e1b4b';
+        ctx.font = `bold ${7 * S}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        // Đặt text cao hơn 1/2 để sát phía trên, giảm khoảng trống dưới
+        ctx.fillText(titleText, cv.width / 2, tH * 0.44);
+        // Underline sát ngay dưới text
+        ctx.strokeStyle = '#7c3aed';
+        ctx.lineWidth = 2 * S / 4;
+        const tw = ctx.measureText(titleText).width;
+        ctx.beginPath();
+        ctx.moveTo((cv.width - tw) / 2, tH * 0.7);
+        ctx.lineTo((cv.width + tw) / 2, tH * 0.7);
+        ctx.stroke();
+        yPx += tH;
+      }
+
+      // Header row
+      const hH = HDR_H * S;
+      ctx.fillStyle = '#7c3aed';
+      ctx.fillRect(0, yPx, cv.width, hH);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `bold ${7 * S}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const colCenters = [C1 / 2, C1 + C2 / 2, C1 + C2 + C3 / 2];
+      const colLabels  = ['STT', 'Họ và tên', 'Ảnh đính kèm'];
+      colCenters.forEach((cx, ci) => ctx.fillText(colLabels[ci], cx * S, yPx + hH / 2));
+      // Separator lines in header
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.lineWidth = 1;
+      [C1, C1 + C2].forEach(x => {
+        ctx.beginPath();
+        ctx.moveTo(x * S, yPx);
+        ctx.lineTo(x * S, yPx + hH);
+        ctx.stroke();
+      });
+      yPx += hH;
+
+      // Data rows
+      const rH = ROW_H * S;
+      for (let ri = 0; ri < slice.length; ri++) {
+        const gi   = startGlobalIdx + ri;
+        const rec  = slice[ri];
+        const name = String(rec[s.nameCol] || `(dòng ${gi + 1})`);
+        const match = s.matchMap[gi];
+
+        // Row bg (alternating)
+        ctx.fillStyle = ri % 2 === 0 ? '#faf8ff' : '#ffffff';
+        ctx.fillRect(0, yPx, cv.width, rH);
+
+        // Outer border
+        ctx.strokeStyle = '#d1d5db';
+        ctx.lineWidth   = 1;
+        ctx.strokeRect(0.5, yPx + 0.5, cv.width - 1, rH - 1);
+
+        // Column dividers
+        ctx.strokeStyle = '#e5e7eb';
+        [C1, C1 + C2].forEach(x => {
+          ctx.beginPath();
+          ctx.moveTo(x * S, yPx);
+          ctx.lineTo(x * S, yPx + rH);
+          ctx.stroke();
+        });
+
+        // ── STT ──
+        ctx.fillStyle = '#374151';
+        ctx.font = `bold ${7 * S}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(gi + 1), (C1 / 2) * S, yPx + rH / 2);
+
+        // ── Tên (auto word-wrap) ──
+        ctx.font = `${7 * S}px Arial`;
+        ctx.textAlign = 'left';
+        ctx.fillStyle = '#111827';
+        const namePad  = 3 * S;
+        const nameMaxW = (C2 - 6) * S;
+        // Split text into lines that fit the column width
+        const nameWords = name.split(' ');
+        const nameLines = [];
+        let curLine = '';
+        for (const w of nameWords) {
+          const test = curLine ? curLine + ' ' + w : w;
+          if (ctx.measureText(test).width > nameMaxW && curLine) {
+            nameLines.push(curLine);
+            curLine = w;
+          } else { curLine = test; }
+        }
+        if (curLine) nameLines.push(curLine);
+        const lineH_px   = 8.5 * S;
+        const totalNameH = nameLines.length * lineH_px;
+        const nameStartY = yPx + (rH - totalNameH) / 2 + lineH_px * 0.75;
+        ctx.textBaseline = 'alphabetic';
+        nameLines.forEach((ln, li) => ctx.fillText(ln, C1 * S + namePad, nameStartY + li * lineH_px));
+
+        // ── Ảnh đính kèm ──
+        const anhX0 = (C1 + C2) * S;
+        const PAD   = 4 * S;
+        if (match && match.url) {
+          try {
+            const img   = await loadImg(match.url);
+            const maxH  = rH - 2 * PAD;
+            const maxW  = C3 * S * 0.55;           // photo takes ~55% of col width
+            const scale = Math.min(maxH / img.naturalHeight, maxW / img.naturalWidth);
+            const iW    = img.naturalWidth  * scale;
+            const iH    = img.naturalHeight * scale;
+            const iX    = anhX0 + PAD;
+            const iY    = yPx + (rH - iH) / 2;
+
+            // Drop-shadow
+            ctx.save();
+            ctx.shadowColor  = 'rgba(0,0,0,0.18)';
+            ctx.shadowBlur   = 3 * S;
+            ctx.shadowOffsetX = S;
+            ctx.shadowOffsetY = S;
+            ctx.drawImage(img, iX, iY, iW, iH);
+            ctx.restore();
+
+            // Thin border
+            ctx.strokeStyle = '#9ca3af';
+            ctx.lineWidth   = 1;
+            ctx.strokeRect(iX, iY, iW, iH);
+
+            // Filename label (right side of photo)
+            const fnX    = iX + iW + PAD;
+            const fnMaxW = anhX0 + C3 * S - fnX - PAD;
+            ctx.fillStyle = '#6b7280';
+            ctx.font      = `${5.5 * S}px Arial`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            let fn = match.filename || '';
+            while (ctx.measureText(fn).width > fnMaxW && fn.length > 4) {
+              fn = fn.slice(0, -1);
+            }
+            if (fn !== (match.filename || '')) fn += '…';
+            // Split into two lines if name has extension
+            const dotIdx = fn.lastIndexOf('.');
+            if (dotIdx > 0) {
+              const base = fn.slice(0, dotIdx);
+              const ext  = fn.slice(dotIdx);
+              ctx.fillText(base, fnX, yPx + rH / 2 - 3 * S);
+              ctx.fillStyle = '#9ca3af';
+              ctx.fillText(ext,  fnX, yPx + rH / 2 + 3 * S);
+            } else {
+              ctx.fillText(fn, fnX, yPx + rH / 2);
+            }
+          } catch (e) {
+            ctx.fillStyle = '#ef4444';
+            ctx.font = `italic ${6 * S}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('(lỗi tải ảnh)', anhX0 + (C3 / 2) * S, yPx + rH / 2);
+          }
+        } else {
+          ctx.fillStyle = '#9ca3af';
+          ctx.font = `italic ${6 * S}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('(chưa ghép ảnh)', anhX0 + (C3 / 2) * S, yPx + rH / 2);
+        }
+
+        yPx += rH;
+      }
+
+      return { dataUrl: cv.toDataURL('image/jpeg', 0.97), heightMM: cvH_mm };
+    }
+
+    // ── Paginate and build PDF ──
+    const total = s.records.length;
+    let pageIdx = 0;
+    let i = 0;
+    while (i < total) {
+      const isFirst = (pageIdx === 0);
+      const maxRows = isFirst ? ROWS_PER_FIRST : ROWS_PER_REST;
+      const slice   = s.records.slice(i, i + maxRows);
+      const { dataUrl, heightMM } = await renderPageCanvas(slice, i, isFirst);
+
+      if (pageIdx > 0) doc.addPage();
+      doc.addImage(dataUrl, 'JPEG', MX, MY, TW, heightMM);
+
+      // Page number bottom-right
+      doc.setFontSize(8);
+      doc.setTextColor(160, 160, 160);
+      doc.text(`Trang ${pageIdx + 1}`, PW - MX, PH - 6, { align: 'right' });
+
+      i        += maxRows;
+      pageIdx  += 1;
+    }
+
+    const ts = new Date().toLocaleDateString('vi-VN').replace(/\//g,'-');
+    const saved = await savePDFWithPicker(doc, `danh_sach_kiem_tra_${ts}.pdf`);
+    if (saved === null) { btn.textContent = '📋 Xuất danh sách kiểm tra ảnh (PDF)'; btn.disabled = false; return; }
+
+  } catch (err) {
+    alert('Lỗi xuất PDF: ' + err.message);
+    console.error(err);
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '📋 Xuất danh sách kiểm tra ảnh (PDF)';
+  }
 }
 
 // ══════════════════════════════════════════════
@@ -2720,9 +3131,10 @@ async function exportToPDF(){
     });
     doc.addImage(imgData,'JPEG',0,0,s.tW,s.tH);
     const fname=($i('pdfFileName').value||'output').replace(/[\/\\:*?"<>|]/g,'_');
-    doc.save(fname+'.pdf');
+    const saved=await savePDFWithPicker(doc, fname+'.pdf');
+    if(saved===null){btn.disabled=false;return;} // người dùng hủy
     $i('progFill').style.width='100%';
-    $i('progLbl').textContent='✅ Đã xuất: '+fname+'.pdf';
+    $i('progLbl').textContent='✅ Đã xuất: '+saved;
   }catch(err){
     $i('progLbl').textContent='❌ Lỗi: '+err.message;
     console.error(err);
@@ -2744,14 +3156,187 @@ function refreshPDFUI(){
 }
 
 // ══════════════════════════════════════════════
+//  LAYOUT PRESETS  (localStorage)
+// ══════════════════════════════════════════════
+const _PRESET_KEY = 'pmLayoutPresets_v1';
+
+function _getPresets() {
+  try { return JSON.parse(localStorage.getItem(_PRESET_KEY) || '[]'); }
+  catch { return []; }
+}
+function _savePresets(arr) {
+  localStorage.setItem(_PRESET_KEY, JSON.stringify(arr));
+}
+
+// Lưu bố cục hiện tại thành preset mới
+function saveLayoutPreset() {
+  const name = ($i('presetNameInput').value || '').trim();
+  if (!name) { showToast('⚠️ Nhập tên bố cục trước!'); $i('presetNameInput').focus(); return; }
+  const s = CS();
+  if (!s.textFields.length && !s.imageFields.length) {
+    showToast('⚠️ Chưa có trường văn bản hoặc vùng ảnh nào để lưu!'); return;
+  }
+  const preset = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+    name,
+    tab: activeTab,
+    savedAt: new Date().toISOString(),
+    textFields: s.textFields.map(f => ({ ...f })),
+    imageFields: s.imageFields.map(f => ({ ...f, studentCrops: {} })),
+    nameCol: s.nameCol,
+    fnTemplate: s.fnTemplate || '',
+    fmt: s.fmt,
+    noAccent: s.noAccent,
+    spaceUnderscore: s.spaceUnderscore,
+  };
+  const all = _getPresets();
+  all.unshift(preset);
+  _savePresets(all);
+  $i('presetNameInput').value = '';
+  renderPresetList();
+  showToast(`✅ Đã lưu bố cục "${name}"`);
+}
+
+// Áp dụng preset vào trạng thái hiện tại (giữ nguyên data Excel + ảnh)
+function applyLayoutPreset(id) {
+  const preset = _getPresets().find(p => p.id === id);
+  if (!preset) return;
+  if (!confirm(`Áp dụng bố cục "${preset.name}" sẽ thay thế các trường văn bản hiện tại.\nTiếp tục?`)) return;
+  const s = CS();
+  s.textFields  = (preset.textFields  || []).map(f => ({ ...f, id: uid() }));
+  s.imageFields = (preset.imageFields || []).map(f => ({ ...f, id: uid(), studentCrops: {} }));
+  if (preset.nameCol)       s.nameCol       = preset.nameCol;
+  if (preset.fnTemplate)    s.fnTemplate    = preset.fnTemplate;
+  if (preset.fmt)           s.fmt           = preset.fmt;
+  s.noAccent        = preset.noAccent        ?? true;
+  s.spaceUnderscore = preset.spaceUnderscore ?? true;
+  renderTextFields(); renderImageFields();
+  refreshColChips(); refreshFNSel();
+  if (activeTab === 'cert') { refreshNameColSel(); }
+  renderCanvas(); updateCertBar();
+  showToast(`✅ Đã áp dụng bố cục "${preset.name}"`);
+}
+
+function deleteLayoutPreset(id) {
+  const preset = _getPresets().find(p => p.id === id);
+  if (!preset) return;
+  if (!confirm(`Xóa bố cục "${preset.name}"?`)) return;
+  _savePresets(_getPresets().filter(p => p.id !== id));
+  renderPresetList();
+  showToast('🗑️ Đã xóa bố cục');
+}
+
+// Render danh sách preset phù hợp với tab hiện tại
+function renderPresetList() {
+  const el = $i('presetListEl');
+  if (!el) return;
+  const all = _getPresets().filter(p => !p.tab || p.tab === activeTab);
+  if (!all.length) {
+    el.innerHTML = '<div style="color:var(--mu);font-size:12px;padding:3px 0 5px">Chưa có bố cục nào — thiết lập xong thì lưu lại để dùng cho lớp khác.</div>';
+    return;
+  }
+  el.innerHTML = all.map(p => {
+    const date = new Date(p.savedAt).toLocaleDateString('vi-VN');
+    const tfCount = p.textFields?.length || 0;
+    const ifCount = p.imageFields?.length || 0;
+    const meta = [tfCount + ' text', ifCount > 0 ? ifCount + ' vùng ảnh' : ''].filter(Boolean).join(' · ') + ' · ' + date;
+    return `<div class="preset-row">
+      <div style="flex:1;min-width:0">
+        <div class="preset-name">${eH(p.name)}</div>
+        <div class="preset-meta">${eH(meta)}</div>
+      </div>
+      <button class="preset-apply" onclick="applyLayoutPreset('${p.id}')">✅ Dùng</button>
+      <button class="preset-del"   onclick="deleteLayoutPreset('${p.id}')" title="Xóa">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+// Xuất tất cả preset của tab hiện tại ra file JSON
+function exportLayoutPresets() {
+  const all = _getPresets().filter(p => !p.tab || p.tab === activeTab);
+  if (!all.length) { showToast('⚠️ Chưa có bố cục nào để xuất!'); return; }
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `printmerge_layouts_${activeTab}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+// Import preset từ file JSON (merge, không ghi đè)
+function importLayoutPresets(inp) {
+  const file = inp.files[0]; inp.value = '';
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      let data = JSON.parse(e.target.result);
+      if (!Array.isArray(data)) data = [data];
+      const existing = _getPresets();
+      const existIds = new Set(existing.map(p => p.id));
+      let added = 0;
+      for (const p of data) {
+        if (p.name && p.textFields) {
+          if (!existIds.has(p.id)) { existing.unshift(p); added++; }
+        }
+      }
+      _savePresets(existing);
+      renderPresetList();
+      showToast(`✅ Đã import ${added} bố cục`);
+    } catch (ex) {
+      showToast('❌ File không hợp lệ: ' + ex.message, 5000);
+    }
+  };
+  r.readAsText(file);
+}
+
+// ══════════════════════════════════════════════
 //  HELP
 // ══════════════════════════════════════════════
 function openHelp(){ $i('helpOv').classList.add('on'); }
 function closeHelp(){ $i('helpOv').classList.remove('on'); }
 document.addEventListener('keydown', e=>{
   if(e.key==='?' || (e.key==='F1' && !e.ctrlKey)) { e.preventDefault(); openHelp(); }
-  if(e.key==='Escape') closeHelp();
+  if(e.key==='Escape'){ closeHelp(); closeSaveModal(); }
 });
+
+// ══════════════════════════════════════════════
+//  KHÔI PHỤC ẢNH SAU KHI TẢI PHIÊN
+// ══════════════════════════════════════════════
+async function pickPhotoFolderForRestore(){
+  // Ưu tiên File System Access API (Chrome/Edge) — hỗ trợ startIn
+  if(window.showDirectoryPicker){
+    try{
+      const dirHandle=await window.showDirectoryPicker({mode:'read',startIn:'desktop'});
+      const s=CS();
+      s.photos.clear(); s.photoNames.clear();
+      s.photoFolderName=dirHandle.name;
+      let count=0;
+      const zone=$i('folderZone');
+      if(zone) zone.querySelector('div').textContent=`⏳ Đang tối ưu ảnh...`;
+      for await(const[,fh] of dirHandle.entries()){
+        if(fh.kind!=='file') continue;
+        const file=await fh.getFile();
+        if(!/\.(jpe?g|png|webp|gif|bmp)$/i.test(file.name)) continue;
+        const k=normKey(file.name);
+        const url=await compressPhotoFile(file,1600);
+        s.photos.set(k,url); s.photoNames.set(k,file.name);
+        count++;
+      }
+      if(zone) zone.querySelector('div').textContent=`✓ ${count} ảnh từ "${dirHandle.name}"`;
+      if(zone) zone.classList.add('ok');
+      autoMatchPhotos();
+      renderMatchTable(); buildMatchStats(); renderCanvas(); updateCertBar();
+      $i('photoRestoreBanner').style.display='none';
+      showToast(`✅ Đã tải ${count} ảnh từ "${dirHandle.name}"`);
+    }catch(e){
+      if(e.name!=='AbortError') showToast('❌ Lỗi: '+e.message,5000);
+    }
+  }else{
+    // Fallback: dùng input webkitdirectory có sẵn
+    $i('folderInput').click();
+  }
+}
 
 // ══════════════════════════════════════════════
 //  THEME
@@ -2794,16 +3379,27 @@ async function blobToDataUrl(src){
   }catch{return null;}
 }
 
-async function saveSession(){
+function saveSession(){
   const s=CS();
   if(!s.templateImg&&!s.records.length){showToast('⚠️ Chưa có dữ liệu để lưu!');return;}
+  // Điền sẵn tên phiên cũ (nếu có) vào input
+  $i('sessionNameInput').value = s.sessionName||'';
+  $i('saveSessionOv').classList.add('on');
+  setTimeout(()=>$i('sessionNameInput').select(),120);
+}
+function closeSaveModal(){
+  $i('saveSessionOv').classList.remove('on');
+}
+async function confirmSaveSession(){
+  const nameInput=$i('sessionNameInput').value.trim();
+  closeSaveModal();
+  CS().sessionName=nameInput;
   const btn=$i('saveSessBtn'); btn.textContent='⏳ Đang lưu…'; btn.disabled=true;
   try{
-    const sess={version:2,savedAt:new Date().toISOString(),tab:activeTab,fieldCtr};
+    const sess={version:2,savedAt:new Date().toISOString(),tab:activeTab,fieldCtr,sessionName:nameInput};
     for(const tab of ['inv','cert']){
       const st=STATES[tab];
       if(!st.templateImg&&!st.records.length) continue;
-      // matchMap → chỉ lưu filename, không lưu blob URL
       const matchMapFiles={};
       for(const[k,v] of Object.entries(st.matchMap)) if(v?.filename) matchMapFiles[k]=v.filename;
       sess[tab]={
@@ -2817,14 +3413,19 @@ async function saveSession(){
         fmt:st.fmt, fnTemplate:st.fnTemplate||'',
         noAccent:st.noAccent, spaceUnderscore:st.spaceUnderscore,
         ifStep:st.ifStep||5, cropStep:st.cropStep||5,
+        photoFolderName:st.photoFolderName||'',
+        sessionName:nameInput,
       };
     }
     const blob=new Blob([JSON.stringify(sess)],{type:'application/json'});
     const a=document.createElement('a');
     a.href=URL.createObjectURL(blob);
-    a.download=`PrintMerge_${new Date().toISOString().slice(0,10)}.pmSession`;
+    const safeName=nameInput
+      ? nameInput.replace(/[\/\\:*?"<>|]/g,'_').slice(0,60)
+      : `PrintMerge_${new Date().toISOString().slice(0,10)}`;
+    a.download=safeName+'.pmSession';
     a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),5000);
-    showToast('✅ Đã lưu phiên làm việc!');
+    showToast('✅ Đã lưu: '+(nameInput||safeName));
   }catch(e){showToast('❌ Lỗi lưu phiên: '+e.message,5000);}
   finally{btn.textContent='💾 Lưu phiên';btn.disabled=false;}
 }
@@ -2861,6 +3462,8 @@ async function loadSession(sess){
     st.fmt=data.fmt||'jpeg'; st.fnTemplate=data.fnTemplate||'';
     st.noAccent=data.noAccent!==false; st.spaceUnderscore=data.spaceUnderscore!==false;
     st.ifStep=data.ifStep||5; st.cropStep=data.cropStep||5;
+    st.photoFolderName=data.photoFolderName||'';
+    st.sessionName=data.sessionName||sess.sessionName||'';
 
     // Khôi phục template từ base64
     if(data.tplDataUrl){
@@ -2895,14 +3498,30 @@ async function loadSession(sess){
 
   const total=Object.keys(CS().matchMapFiles).length;
   const restored=Object.keys(CS().matchMap).length;
+  const sessName=sess.sessionName||CS().sessionName||'';
+  const sessLabel=sessName?` "${sessName}"`:'';
+  const isCertTab=(sess.tab==='cert'||activeTab==='cert');
+
   if(total>0&&restored<total){
-    showToast(`✅ Đã khôi phục phiên!\n${restored}/${total} ảnh đã khớp — upload thư mục ảnh để khôi phục ${total-restored} ảnh còn lại`,6000);
-  }else if(total>0){
-    showToast(`✅ Đã khôi phục toàn bộ phiên! (${total} ảnh)`,4000);
+    const missing=total-restored;
+    const folderHint=CS().photoFolderName?`Thư mục: "${CS().photoFolderName}" — `:'';
+    if(isCertTab){
+      $i('photoRestoreMsg').textContent=`${folderHint}${missing} ảnh chưa khôi phục (${restored}/${total} đã khớp)`;
+      $i('photoRestoreBanner').style.display='block';
+    }
+    showToast(`✅ Đã mở phiên${sessLabel}! Chọn thư mục ảnh để khôi phục ${missing} ảnh còn thiếu.`,5000);
   }else{
-    showToast('✅ Đã khôi phục phiên làm việc!');
+    if(isCertTab) $i('photoRestoreBanner').style.display='none';
+    if(total>0){
+      showToast(`✅ Đã khôi phục toàn bộ phiên${sessLabel}! (${total} ảnh)`,4000);
+    }else{
+      showToast(`✅ Đã mở phiên${sessLabel}!`);
+    }
   }
 }
+
+// Khởi tạo danh sách bố cục khi trang load
+renderPresetList();
 </script>
 <footer>
   <div class="f-left">
