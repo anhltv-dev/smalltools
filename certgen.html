@@ -1088,7 +1088,8 @@ const STATES = {inv:mkState(), cert:mkState()};
 // ── Clean tab state ──
 function mkCleanState(){
   return {img:null,editCanvas:null,editCtx:null,history:[],histIdx:-1,
-          tool:'brush',brushSize:20,tolerance:40,isDrawing:false,tW:0,tH:0,previewScale:0.7};
+          tool:'brush',brushSize:20,tolerance:40,isDrawing:false,tW:0,tH:0,
+          previewScale:0.7, records:[], currentIdx:0}; // records/currentIdx cần cho renderCanvas()
 }
 STATES.clean = mkCleanState();
 let activeTab = 'inv', fieldCtr = 0;
