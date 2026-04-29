@@ -10,6 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@400;600;700&family=Raleway:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&family=Josefin+Sans:wght@400;600;700&family=Nunito:wght@400;600;700&family=Bebas+Neue&family=Playfair+Display+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -261,6 +262,20 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 .match-list span{display:block}
 /* Canvas handles */
 #previewCanvas.crop-cur{cursor:crosshair}
+/* PDF inline editor — floating contenteditable trên canvas */
+#pdfInlineEdit{
+  position:absolute;display:none;z-index:60;
+  min-width:60px;padding:1px 4px;
+  background:rgba(240,192,96,.07);
+  border:1.5px dashed var(--ac);
+  border-radius:3px;outline:none;
+  white-space:pre;line-height:1.25;
+  cursor:text;box-sizing:border-box;
+  text-shadow:0 0 4px rgba(0,0,0,.6); /* giúp dễ đọc trên mọi nền */
+}
+#pdfInlineEdit:focus{border-color:#f0c060;background:rgba(240,192,96,.12)}
+/* Tooltip hint double-click */
+.pdf-dblclick-hint{font-size:11px;color:var(--mu);margin-top:5px;font-style:italic}
 #previewCanvas.move-cur{cursor:move}
 #previewCanvas.resize-nw-cur,#previewCanvas.resize-se-cur{cursor:nwse-resize}
 #previewCanvas.resize-ne-cur,#previewCanvas.resize-sw-cur{cursor:nesw-resize}
@@ -782,6 +797,7 @@ body.light .if-match-row{background:var(--sf)}
 
       <div class="sec" style="flex:1">
         <div class="stitle n"><span class="snum n">4</span> Nội dung điền vào</div>
+        <div class="pdf-dblclick-hint">💡 Double-click trực tiếp lên PDF để gõ tại chỗ</div>
         <div id="pdfFieldsList"></div>
         <button class="add-btn inv" onclick="addPDFTextField()">＋ Thêm trường văn bản</button>
       </div>
@@ -818,6 +834,8 @@ body.light .if-match-row{background:var(--sf)}
         <canvas id="previewCanvas"></canvas>
         <div class="pick-dot" id="pickDot"></div>
         <div class="coord-tip" id="coordTip"></div>
+        <!-- Inline editor: hiện khi double-click lên PDF (PDF Form mode) -->
+        <div id="pdfInlineEdit" contenteditable="true" spellcheck="false"></div>
       </div>
     </div>
 
@@ -871,6 +889,10 @@ body.light .if-match-row{background:var(--sf)}
         </div>
         <button class="btn exp-btn" id="expPdfBtn" onclick="exportToPDF()" disabled>
           📄 Xuất PDF
+        </button>
+        <button class="btn" id="expWordBtn" onclick="exportToWord()" disabled
+          style="width:100%;justify-content:center;margin-top:7px;background:linear-gradient(135deg,#1d6fa5,#2b8fce);border:none;color:#fff;font-size:12.5px;padding:9px">
+          📝 Xuất Word (.docx) — giữ nguyên định dạng
         </button>
       </div>
 
@@ -1611,6 +1633,120 @@ $i('previewCanvas').addEventListener('mouseleave',()=>{
   if(hoveredIFId){hoveredIFId=null;renderCanvas();}
 });
 document.addEventListener('mouseup',()=>{if(canvasDrag){canvasDrag=null;renderImageFields();renderCanvas();}});
+
+// ══════════════════════════════════════════════
+//  PDF INLINE EDITOR — double-click để gõ tại chỗ
+// ══════════════════════════════════════════════
+let _pdfEditId = null;   // field id đang được edit inline
+let _pdfEditTimer = null; // debounce re-render
+
+$i('previewCanvas').addEventListener('dblclick', e => {
+  if (activeTab !== 'pdf') return;
+  const s = STATES.pdf;
+  if (s.pickTarget) return; // đang ở pick mode, bỏ qua
+  const rect = e.target.getBoundingClientRect();
+  const canvasX = e.clientX - rect.left;
+  const canvasY = e.clientY - rect.top;
+  const sc = s.previewScale;
+  const pdfX = Math.round(canvasX / sc);
+  const pdfY = Math.round(canvasY / sc);
+
+  // Tìm field gần nhất (trong vòng 36px trên màn hình)
+  const THRESH = 36 / sc;
+  let target = null, minD = Infinity;
+  for (const f of s.textFields) {
+    const d = Math.hypot(f.x - pdfX, f.y - pdfY);
+    if (d < THRESH && d < minD) { minD = d; target = f; }
+  }
+
+  if (!target) {
+    // Tạo field mới tại vị trí click
+    const id = uid();
+    // Thu gọn field trước nếu có
+    if (s.textFields.length) s.textFields[s.textFields.length - 1].collapsed = true;
+    s.textFields.push({
+      id, label: 'Trường ' + (s.textFields.length + 1),
+      value: '', template: '',
+      x: pdfX, y: pdfY,
+      size: 18, color: '#1a1a1a',
+      font: 'Arial', bold: false, italic: false,
+      align: 'left', baseline: 'alphabetic',
+      stroke: false, strokeColor: '#ffffff', strokeWidth: 2, shadow: false,
+      collapsed: false,
+    });
+    target = s.textFields[s.textFields.length - 1];
+    renderPDFFields();
+  }
+
+  _showPdfInlineEdit(target);
+});
+
+function _showPdfInlineEdit(field) {
+  const s = STATES.pdf;
+  const sc = s.previewScale;
+  const el = $i('pdfInlineEdit');
+  _pdfEditId = field.id;
+
+  // Tính offset dựa vào baseline
+  let topOffset = 0;
+  if (!field.baseline || field.baseline === 'alphabetic') topOffset = -(field.size * 0.82);
+  else if (field.baseline === 'middle')  topOffset = -(field.size * 0.5);
+  else if (field.baseline === 'bottom')  topOffset = -field.size;
+  // 'top' → offset = 0
+
+  el.style.left        = Math.round(field.x * sc) + 'px';
+  el.style.top         = Math.round((field.y + topOffset) * sc) + 'px';
+  el.style.fontFamily  = `"${field.font}", Arial, sans-serif`;
+  el.style.fontSize    = Math.max(10, Math.round(field.size * sc)) + 'px';
+  el.style.fontWeight  = field.bold   ? 'bold'   : 'normal';
+  el.style.fontStyle   = field.italic ? 'italic' : 'normal';
+  el.style.color       = field.color;
+  el.style.textAlign   = field.align;
+  el.style.display     = 'block';
+  el.innerText = field.value || '';
+
+  // Focus và đặt cursor cuối
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function _hidePdfInlineEdit(save = true) {
+  const el = $i('pdfInlineEdit');
+  if (!_pdfEditId) return;
+  if (save) {
+    const val = el.innerText || '';
+    const f = STATES.pdf.textFields.find(tf => tf.id === _pdfEditId);
+    if (f) { f.value = val; renderPDFFields(); renderCanvas(); }
+  }
+  el.style.display = 'none';
+  _pdfEditId = null;
+}
+
+$i('pdfInlineEdit').addEventListener('input', () => {
+  // Live preview: cập nhật canvas trong lúc gõ (debounce 60ms)
+  const val = $i('pdfInlineEdit').innerText || '';
+  const f = STATES.pdf.textFields.find(tf => tf.id === _pdfEditId);
+  if (f) {
+    f.value = val;
+    clearTimeout(_pdfEditTimer);
+    _pdfEditTimer = setTimeout(renderCanvas, 60);
+  }
+});
+
+$i('pdfInlineEdit').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.preventDefault(); _hidePdfInlineEdit(false); renderCanvas(); }
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); _hidePdfInlineEdit(true); }
+});
+
+$i('pdfInlineEdit').addEventListener('blur', () => {
+  // Delay nhỏ tránh xung đột với click events
+  setTimeout(() => { if (_pdfEditId) _hidePdfInlineEdit(true); }, 120);
+});
 
 function toggleCropMode(id){
   activeCropFieldId=(activeCropFieldId===id)?null:id;
@@ -3150,9 +3286,133 @@ function refreshPDFUI(){
   $i('emptyState').style.display=ready?'none':'flex';
   $i('cwrap').style.display=ready?'inline-block':'none';
   $i('expPdfBtn').disabled=!ready;
+  $i('expWordBtn').disabled=!ready;
   $i('scaleRange').value=Math.round(s.previewScale*100);
   $i('scaleLabel').textContent=Math.round(s.previewScale*100)+'%';
   if(ready) renderCanvas();
+}
+
+// ══════════════════════════════════════════════
+//  XUẤT WORD (.docx) — giữ nguyên định dạng
+// ══════════════════════════════════════════════
+async function exportToWord(){
+  const s=STATES.pdf;
+  if(!s.templateImg) return;
+  if(!window.docx){ alert('Thư viện Word chưa tải xong, thử lại sau vài giây!'); return; }
+
+  const btn=$i('expWordBtn');
+  btn.disabled=true; btn.textContent='⏳ Đang tạo Word...';
+
+  try{
+    // 1. Render toàn bộ nội dung (PDF + cover + photo + text) lên canvas full-res
+    const cv=document.createElement('canvas');
+    cv.width=s.tW; cv.height=s.tH;
+    const ctx=cv.getContext('2d');
+
+    // Nền PDF
+    ctx.drawImage(s.templateImg,0,0);
+
+    // Vùng che trắng
+    for(const b of s.coverBlocks){
+      ctx.fillStyle='#ffffff';
+      ctx.fillRect(b.x,b.y,b.w,b.h);
+    }
+
+    // Ảnh thẻ
+    if(s.photo?.img){
+      const p=s.photo;
+      ctx.drawImage(p.img,p.x,p.y,p.w,p.h);
+    }
+
+    // Trường văn bản
+    for(const f of s.textFields){
+      if(!f.value) continue;
+      await ensureFont(f.font);
+      ctx.font=`${f.italic?'italic ':''}${f.bold?'bold ':''}${f.size}px "${f.font}",Arial`;
+      ctx.textAlign=f.align; ctx.textBaseline=f.baseline||'alphabetic';
+      if(f.shadow){ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=4;ctx.shadowOffsetX=ctx.shadowOffsetY=2;}
+      if(f.stroke){ctx.strokeStyle=f.strokeColor;ctx.lineWidth=f.strokeWidth*2;ctx.lineJoin='round';ctx.strokeText(f.value,f.x,f.y);}
+      ctx.fillStyle=f.color;
+      ctx.fillText(f.value,f.x,f.y);
+      ctx.shadowColor='transparent';ctx.shadowBlur=0;
+    }
+
+    // 2. Chuyển canvas → PNG ArrayBuffer
+    const pngBlob=await new Promise(res=>cv.toBlob(res,'image/png',1.0));
+    const imgBuf=await pngBlob.arrayBuffer();
+
+    // 3. Tính kích thước trang Word
+    // pdf.js render ở scale=2 → chia 2 để về kích thước PDF gốc (72dpi points)
+    // 1 point = 20 twips (đơn vị Word)
+    const ptW=s.tW/2, ptH=s.tH/2;
+    const twW=Math.round(ptW*20), twH=Math.round(ptH*20);
+
+    // 4. Tạo Document với docx.js
+    const {Document,Packer,Paragraph,ImageRun}=window.docx;
+    const doc=new Document({
+      sections:[{
+        properties:{
+          page:{
+            size:{width:twW,height:twH,orientation:s.tW>s.tH?'landscape':'portrait'},
+            margin:{top:0,right:0,bottom:0,left:0,footer:0,header:0,gutter:0},
+          },
+        },
+        children:[
+          new Paragraph({
+            spacing:{before:0,after:0,line:240},
+            children:[
+              new ImageRun({
+                data:imgBuf,
+                transformation:{width:Math.round(ptW),height:Math.round(ptH)},
+                type:'png',
+              }),
+            ],
+          }),
+        ],
+      }],
+    });
+
+    // 5. Xuất blob và mở hộp thoại lưu
+    const wordBlob=await Packer.toBlob(doc);
+    const fname=($i('pdfFileName').value||'output').replace(/[\/\\:*?"<>|]/g,'_');
+
+    if(window.showSaveFilePicker){
+      try{
+        const fh=await window.showSaveFilePicker({
+          suggestedName:fname+'.docx',
+          startIn:'desktop',
+          types:[{description:'Word Document',accept:{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}}],
+        });
+        const w=await fh.createWritable();
+        await w.write(wordBlob);
+        await w.close();
+        showToast('✅ Đã lưu Word: '+fh.name);
+      }catch(e){
+        if(e.name!=='AbortError'){
+          // Fallback download
+          _dlBlob(wordBlob,fname+'.docx');
+          showToast('✅ Đã tải Word: '+fname+'.docx');
+        }
+      }
+    }else{
+      _dlBlob(wordBlob,fname+'.docx');
+      showToast('✅ Đã tải Word: '+fname+'.docx');
+    }
+
+  }catch(err){
+    alert('Lỗi xuất Word: '+err.message);
+    console.error(err);
+  }finally{
+    btn.disabled=false;
+    btn.textContent='📝 Xuất Word (.docx) — giữ nguyên định dạng';
+  }
+}
+
+function _dlBlob(blob,filename){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),5000);
 }
 
 // ══════════════════════════════════════════════
