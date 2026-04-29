@@ -396,6 +396,27 @@ body.light .if-match-row{background:var(--sf)}
 .crop-dpad-wrap{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:8px;margin-top:6px}
 .crop-dpad-title{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
 .crop-offset-label{font-family:monospace;font-size:10px;color:var(--cert)}
+/* ══ CLEAN TAB ══ */
+:root{--clean:#f97316;--clean-dim:rgba(249,115,22,.13);--clean-bd:rgba(249,115,22,.38)}
+body.light{--clean:#c2410c;--clean-dim:rgba(194,65,12,.09);--clean-bd:rgba(194,65,12,.32)}
+.tab-btn.clean.active{color:var(--clean);border-bottom-color:var(--clean);background:var(--clean-dim)}
+.stitle.clean{color:var(--clean)}.snum.clean{background:var(--clean);color:#000}
+.clean-tools-row{display:flex;gap:5px;margin-bottom:10px}
+.clean-tool-btn{flex:1;padding:7px 4px;border:1px solid var(--bd2);background:var(--sf2);color:var(--mu);border-radius:var(--r);cursor:pointer;font-family:var(--font);font-size:11px;font-weight:600;transition:.15s;display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1.3}
+.clean-tool-btn:hover{border-color:var(--clean-bd);color:var(--clean);background:var(--clean-dim)}
+.clean-tool-btn.active{border-color:var(--clean);color:var(--clean);background:var(--clean-dim);box-shadow:0 0 0 2px var(--clean-dim)}
+.clean-tool-ico{font-size:15px}
+.clean-hist-row{display:flex;gap:6px}
+.clean-hist-btn{flex:1;padding:7px;border:1px solid var(--bd2);background:var(--sf2);color:var(--mu);border-radius:var(--r);cursor:pointer;font-family:var(--font);font-size:12px;font-weight:600;transition:.15s;display:flex;align-items:center;justify-content:center;gap:5px}
+.clean-hist-btn:hover:not(:disabled){border-color:var(--clean-bd);color:var(--clean)}
+.clean-hist-btn:disabled{opacity:.35;cursor:not-allowed}
+.clean-slider-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--mu)}
+.clean-slider-row input[type=range]{flex:1;accent-color:var(--clean)}
+.clean-slider-val{font-family:monospace;font-size:11px;color:var(--clean);min-width:32px;text-align:right}
+.exp-btn.clean-exp{background:linear-gradient(135deg,#f97316,#ea580c);border:none;color:#fff}
+#previewCanvas.clean-brush-cur{cursor:crosshair}
+#previewCanvas.clean-fill-cur{cursor:cell}
+#previewCanvas.clean-color-cur{cursor:copy}
 </style>
 </head>
 <body>
@@ -420,6 +441,7 @@ body.light .if-match-row{background:var(--sf)}
   <button class="tab-btn inv active" id="tabInv" onclick="switchTab('inv')">📝 Thiệp mời</button>
   <button class="tab-btn cert" id="tabCert" onclick="switchTab('cert')">🏆 Giấy chứng nhận</button>
   <button class="tab-btn pdf" id="tabPdf" onclick="switchTab('pdf')">📄 PDF Form</button>
+  <button class="tab-btn clean" id="tabClean" onclick="switchTab('clean')">🧹 Đề sạch</button>
 </div>
 
 <div class="pick-banner" id="pickBanner">
@@ -810,6 +832,64 @@ body.light .if-match-row{background:var(--sf)}
 
     </div><!-- end pdfPanel -->
 
+    <!-- ══ CLEAN PANEL ══ -->
+    <div id="cleanPanel" style="display:none">
+
+      <!-- SEC 1: Upload ảnh -->
+      <div class="sec">
+        <div class="stitle clean"><span class="snum clean">1</span> Ảnh cần tẩy</div>
+        <div class="uz" id="cleanImgZone">
+          <input type="file" accept="image/png,image/jpeg,image/webp" id="cleanImgInput">
+          <span class="ico">🖼️</span>
+          <div>PNG / JPG / WEBP — ảnh đề đã có dấu tay</div>
+        </div>
+        <div class="uinfo" id="cleanImgInfo"></div>
+      </div>
+
+      <!-- SEC 2: Công cụ tẩy -->
+      <div class="sec">
+        <div class="stitle clean"><span class="snum clean">2</span> Công cụ tẩy</div>
+        <div class="clean-tools-row">
+          <button class="clean-tool-btn active" id="cleanToolbrush" onclick="setCleanTool('brush')">
+            <span class="clean-tool-ico">🖌️</span>Tẩy trắng
+          </button>
+          <button class="clean-tool-btn" id="cleanToolfill" onclick="setCleanTool('fill')">
+            <span class="clean-tool-ico">🪣</span>Đổ trắng
+          </button>
+          <button class="clean-tool-btn" id="cleanToolcolorRange" onclick="setCleanTool('colorRange')">
+            <span class="clean-tool-ico">🎨</span>Xóa màu
+          </button>
+        </div>
+        <div id="cleanBrushSizeRow" class="fg" style="margin-bottom:8px">
+          <label style="font-size:12px">Kích thước cọ</label>
+          <div class="clean-slider-row">
+            <input type="range" id="cleanBrushSize" min="5" max="80" value="20"
+              oninput="STATES.clean.brushSize=+this.value;$i('cleanBrushSizeVal').textContent=this.value+'px'">
+            <span class="clean-slider-val" id="cleanBrushSizeVal">20px</span>
+          </div>
+        </div>
+        <div id="cleanToleranceRow" class="fg" style="margin-bottom:0;display:none">
+          <label style="font-size:12px">Độ dung sai <span style="color:var(--mu);font-size:10px">(0=chính xác, 100=rộng)</span></label>
+          <div class="clean-slider-row">
+            <input type="range" id="cleanTolerance" min="0" max="100" value="40"
+              oninput="STATES.clean.tolerance=+this.value;$i('cleanToleranceVal').textContent=this.value">
+            <span class="clean-slider-val" id="cleanToleranceVal">40</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEC 3: Lịch sử -->
+      <div class="sec">
+        <div class="stitle clean"><span class="snum clean">3</span> Lịch sử chỉnh sửa</div>
+        <div class="clean-hist-row" style="margin-bottom:6px">
+          <button class="clean-hist-btn" id="cleanUndoBtn" onclick="cleanUndo()" disabled>↩️ Hoàn tác</button>
+          <button class="clean-hist-btn" id="cleanRedoBtn" onclick="cleanRedo()" disabled>↪️ Làm lại</button>
+        </div>
+        <div style="font-size:10px;color:var(--mu);text-align:center" id="cleanHistLabel">Chưa có thay đổi</div>
+      </div>
+
+    </div><!-- end cleanPanel -->
+
   </div><!-- end left panel -->
 
   <!-- ═══ RIGHT PANEL ═══ -->
@@ -843,6 +923,8 @@ body.light .if-match-row{background:var(--sf)}
         <!-- Inline editor: hiện khi double-click lên PDF (PDF Form mode) -->
         <div id="pdfInlineEdit" contenteditable="true" spellcheck="false"></div>
         <div id="pdf-edit-hint">✏️ Enter = xác nhận · Esc = hủy</div>
+        <!-- Clean mode: canvas full-res ẩn, là source of truth -->
+        <canvas id="cleanEditCanvas" style="display:none"></canvas>
       </div>
     </div>
 
@@ -900,6 +982,27 @@ body.light .if-match-row{background:var(--sf)}
         <button class="btn" id="expWordBtn" onclick="exportToWord()" disabled
           style="width:100%;justify-content:center;margin-top:7px;background:linear-gradient(135deg,#1d6fa5,#2b8fce);border:none;color:#fff;font-size:12.5px;padding:9px">
           📝 Xuất Word (.docx) — giữ nguyên định dạng
+        </button>
+      </div>
+
+      <!-- Clean mode export controls -->
+      <div id="cleanExpBar" style="display:none">
+        <div style="display:flex;gap:7px;margin-bottom:9px">
+          <div class="fg" style="flex:1">
+            <label>Tên file xuất</label>
+            <input type="text" id="cleanFileName" value="de_sach" placeholder="VD: de_sach_toan_9a">
+          </div>
+          <div class="fg" style="flex:0 0 auto">
+            <label>Định dạng</label>
+            <select id="cleanFmtSel">
+              <option value="png">PNG</option>
+              <option value="jpeg">JPEG</option>
+              <option value="pdf">PDF</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn exp-btn clean-exp" id="expCleanBtn" onclick="exportClean()" disabled>
+          ⬇️ Tải đề sạch
         </button>
       </div>
 
@@ -982,6 +1085,12 @@ function mkState() {
   };
 }
 const STATES = {inv:mkState(), cert:mkState()};
+// ── Clean tab state ──
+function mkCleanState(){
+  return {img:null,editCanvas:null,editCtx:null,history:[],histIdx:-1,
+          tool:'brush',brushSize:20,tolerance:40,isDrawing:false,tW:0,tH:0,previewScale:0.7};
+}
+STATES.clean = mkCleanState();
 let activeTab = 'inv', fieldCtr = 0;
 function uid(){ return ++fieldCtr; }
 function CS(){ return STATES[activeTab]; }
@@ -992,16 +1101,23 @@ function $i(id){ return document.getElementById(id); }
 // ══════════════════════════════════════════════
 function switchTab(tab) {
   cancelPick();
+  // Xóa cursors của clean mode khi rời tab
+  $i('previewCanvas').classList.remove('clean-brush-cur','clean-fill-cur','clean-color-cur');
   activeTab = tab;
-  const isCert = tab==='cert';
-  const isPdf  = tab==='pdf';
-  $i('tabInv').classList.toggle('active', tab==='inv');
-  $i('tabCert').classList.toggle('active', isCert);
-  $i('tabPdf').classList.toggle('active', isPdf);
-  $i('invCertPanel').style.display  = isPdf?'none':'block';
-  $i('pdfPanel').style.display      = isPdf?'block':'none';
-  $i('invCertExpBar').style.display = isPdf?'none':'block';
-  $i('pdfExpBar').style.display     = isPdf?'block':'none';
+  const isCert  = tab==='cert';
+  const isPdf   = tab==='pdf';
+  const isClean = tab==='clean';
+  $i('tabInv').classList.toggle('active',   tab==='inv');
+  $i('tabCert').classList.toggle('active',  isCert);
+  $i('tabPdf').classList.toggle('active',   isPdf);
+  $i('tabClean').classList.toggle('active', isClean);
+  $i('invCertPanel').style.display  = (isPdf||isClean)?'none':'block';
+  $i('pdfPanel').style.display      = isPdf   ?'block':'none';
+  $i('cleanPanel').style.display    = isClean ?'block':'none';
+  $i('invCertExpBar').style.display = (isPdf||isClean)?'none':'block';
+  $i('pdfExpBar').style.display     = isPdf   ?'block':'none';
+  $i('cleanExpBar').style.display   = isClean ?'block':'none';
+  if(isClean){ refreshCleanUI(); return; }
   if(isPdf){ renderPDFFields(); refreshPDFUI(); return; }
   $i('photoSection').style.display    = isCert?'block':'none';
   $i('matchSec').style.display        = isCert?'block':'none';
@@ -1802,6 +1918,16 @@ function renderCanvas(){
 }
 
 async function doDraw(canvas, rec, sc, guides) {
+  // ── Clean tab: scale cleanEditCanvas xuống previewCanvas ──
+  if(activeTab==='clean'){
+    const cs=STATES.clean; if(!cs.editCanvas||!cs.tW) return;
+    const tw=Math.round(cs.tW*sc), th=Math.round(cs.tH*sc);
+    const ctx=canvas.getContext('2d');
+    if(canvas.width!==tw||canvas.height!==th){canvas.width=tw;canvas.height=th;}
+    else{ctx.clearRect(0,0,tw,th);}
+    ctx.drawImage(cs.editCanvas,0,0,tw,th);
+    return;
+  }
   const s=CS();
   if(!s.templateImg) return;
   const tw=Math.round(s.tW*sc), th=Math.round(s.tH*sc);
@@ -2482,7 +2608,7 @@ function setCropStep(v){ CS().cropStep=v; renderImageFields(); }
 function setScale(v){CS().previewScale=v;$i('scaleLabel').textContent=Math.round(v*100)+'%';invalidateTplCache();renderCanvas();}
 function refreshFNSel(){ refreshFNArea(); }
 function refreshUI(){
-  if(activeTab==='pdf') return;
+  if(activeTab==='pdf'||activeTab==='clean') return;
   const s=CS(),ready=!!(s.templateImg&&s.records.length);
   $i('emptyState').style.display=ready?'none':'flex';
   $i('cwrap').style.display=ready?'inline-block':'none';
@@ -3552,6 +3678,234 @@ function _dlBlob(blob,filename){
 }
 
 // ══════════════════════════════════════════════
+//  CLEAN TAB — Tẩy dấu tay khỏi bài đã làm
+// ══════════════════════════════════════════════
+
+const MAX_CLEAN_HIST = 20;
+
+// ── UI refresh ──────────────────────────────
+function refreshCleanUI(){
+  const s=STATES.clean;
+  const ready=!!s.img;
+  $i('emptyState').style.display = ready?'none':'flex';
+  $i('cwrap').style.display      = ready?'inline-block':'none';
+  $i('expCleanBtn').disabled     = !ready;
+  const sc=s.previewScale;
+  $i('scaleRange').value=Math.round(sc*100);
+  $i('scaleLabel').textContent=Math.round(sc*100)+'%';
+  setCleanTool(s.tool); // đặt cursor + slider visibility
+  updateCleanHistButtons();
+  if(ready) renderCanvas();
+}
+
+// ── Init canvas từ ảnh đã load ──────────────
+function initCleanCanvas(img){
+  const s=STATES.clean;
+  s.img=img; s.tW=img.naturalWidth; s.tH=img.naturalHeight;
+  const ec=$i('cleanEditCanvas');
+  ec.width=s.tW; ec.height=s.tH;
+  s.editCanvas=ec;
+  s.editCtx=ec.getContext('2d',{willReadFrequently:true});
+  s.editCtx.drawImage(img,0,0);
+  s.history=[]; s.histIdx=-1;
+  saveCleanSnapshot(); // snapshot 0 = ảnh gốc
+}
+
+// ── Undo / Redo ──────────────────────────────
+function saveCleanSnapshot(){
+  const s=STATES.clean; if(!s.editCtx) return;
+  s.history=s.history.slice(0,s.histIdx+1);
+  if(s.history.length>=MAX_CLEAN_HIST) s.history.shift();
+  s.history.push(s.editCtx.getImageData(0,0,s.tW,s.tH));
+  s.histIdx=s.history.length-1;
+  updateCleanHistButtons();
+}
+function cleanUndo(){
+  const s=STATES.clean; if(s.histIdx<=0) return;
+  s.histIdx--; s.editCtx.putImageData(s.history[s.histIdx],0,0);
+  updateCleanHistButtons(); renderCanvas();
+}
+function cleanRedo(){
+  const s=STATES.clean; if(s.histIdx>=s.history.length-1) return;
+  s.histIdx++; s.editCtx.putImageData(s.history[s.histIdx],0,0);
+  updateCleanHistButtons(); renderCanvas();
+}
+function updateCleanHistButtons(){
+  const s=STATES.clean;
+  $i('cleanUndoBtn').disabled=s.histIdx<=0;
+  $i('cleanRedoBtn').disabled=s.histIdx>=s.history.length-1;
+  const total=s.history.length, pos=total===0?0:s.histIdx+1;
+  $i('cleanHistLabel').textContent=total===0?'Chưa có thay đổi':`Bước ${pos} / ${total}`;
+}
+
+// ── Tool selection ───────────────────────────
+function setCleanTool(tool){
+  STATES.clean.tool=tool;
+  ['brush','fill','colorRange'].forEach(t=>{
+    const btn=$i('cleanTool'+t); if(btn) btn.classList.toggle('active',t===tool);
+  });
+  $i('cleanBrushSizeRow').style.display = tool==='brush'?'':'none';
+  $i('cleanToleranceRow').style.display = tool!=='brush'?'':'none';
+  const cv=$i('previewCanvas');
+  cv.classList.remove('clean-brush-cur','clean-fill-cur','clean-color-cur');
+  if(activeTab==='clean'){
+    const cur={brush:'clean-brush-cur',fill:'clean-fill-cur',colorRange:'clean-color-cur'}[tool];
+    if(cur) cv.classList.add(cur);
+  }
+}
+
+// ── Pixel helpers ────────────────────────────
+function _cpx(data,x,y,w){const i=(y*w+x)*4;return[data[i],data[i+1],data[i+2],data[i+3]];}
+function _cwh(data,x,y,w){const i=(y*w+x)*4;data[i]=data[i+1]=data[i+2]=255;data[i+3]=255;}
+function _cdist(a,b){return Math.sqrt((a[0]-b[0])**2+(a[1]-b[1])**2+(a[2]-b[2])**2);}
+
+// ── White brush ──────────────────────────────
+function brushWhite(mx,my){
+  const s=STATES.clean; if(!s.editCtx) return;
+  const x=mx/s.previewScale, y=my/s.previewScale;
+  s.editCtx.save();
+  s.editCtx.fillStyle='#ffffff';
+  s.editCtx.beginPath();
+  s.editCtx.arc(x,y,s.brushSize/2,0,Math.PI*2);
+  s.editCtx.fill();
+  s.editCtx.restore();
+  renderCanvas();
+}
+
+// ── Flood fill (BFS) ─────────────────────────
+function floodFillWhite(mx,my){
+  const s=STATES.clean; if(!s.editCtx) return;
+  const x0=Math.round(mx/s.previewScale), y0=Math.round(my/s.previewScale);
+  const w=s.tW, h=s.tH;
+  if(x0<0||x0>=w||y0<0||y0>=h) return;
+  const imgData=s.editCtx.getImageData(0,0,w,h);
+  const data=imgData.data;
+  const target=_cpx(data,x0,y0,w);
+  // Nếu đã trắng → bỏ qua
+  if(target[0]===255&&target[1]===255&&target[2]===255) return;
+  const tol=s.tolerance*4.41; // 0-100 → 0-441 (≈ 255√3)
+  const visited=new Uint8Array(w*h);
+  const queue=[x0+y0*w]; visited[x0+y0*w]=1; let qi=0;
+  while(qi<queue.length){
+    const idx=queue[qi++];
+    const px=idx%w, py=(idx/w)|0;
+    _cwh(data,px,py,w);
+    const nb=[px-1+py*w,px+1+py*w,px+(py-1)*w,px+(py+1)*w];
+    for(const nIdx of nb){
+      if(nIdx<0||nIdx>=w*h) continue;
+      const nx=nIdx%w, ny=(nIdx/w)|0;
+      if(nx<0||nx>=w||ny<0||ny>=h) continue;
+      if(visited[nIdx]) continue;
+      visited[nIdx]=1;
+      if(_cdist(_cpx(data,nx,ny,w),target)<=tol) queue.push(nIdx);
+    }
+  }
+  s.editCtx.putImageData(imgData,0,0);
+  renderCanvas();
+}
+
+// ── Color range erase ────────────────────────
+function removeColorRange(mx,my){
+  const s=STATES.clean; if(!s.editCtx) return;
+  const x0=Math.round(mx/s.previewScale), y0=Math.round(my/s.previewScale);
+  const w=s.tW, h=s.tH;
+  const imgData=s.editCtx.getImageData(0,0,w,h);
+  const data=imgData.data;
+  const target=_cpx(data,x0,y0,w);
+  const tol=s.tolerance*4.41;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+    if(_cdist(_cpx(data,x,y,w),target)<=tol) _cwh(data,x,y,w);
+  }
+  s.editCtx.putImageData(imgData,0,0);
+  renderCanvas();
+}
+
+// ── Export đề sạch ───────────────────────────
+async function exportClean(){
+  const s=STATES.clean; if(!s.editCanvas) return;
+  const fmt=$i('cleanFmtSel').value;
+  const name=($i('cleanFileName').value||'de_sach').replace(/[\/\\:*?"<>|]/g,'_');
+  const btn=$i('expCleanBtn');
+  btn.disabled=true; btn.textContent='⏳ Đang xuất...';
+  $i('progWrap').classList.add('on'); $i('progFill').style.width='0%'; $i('progLbl').textContent='';
+  try{
+    if(fmt==='pdf'){
+      const {jsPDF}=window.jspdf;
+      const doc=new jsPDF({
+        orientation:s.tW>s.tH?'landscape':'portrait',
+        unit:'px',format:[s.tW,s.tH],hotfixes:['px_scaling'],
+      });
+      doc.addImage(s.editCanvas.toDataURL('image/jpeg',0.97),'JPEG',0,0,s.tW,s.tH);
+      const saved=await savePDFWithPicker(doc,name+'.pdf');
+      if(saved){$i('progFill').style.width='100%';$i('progLbl').textContent='✅ Đã xuất: '+saved;}
+    }else{
+      const mime=fmt==='png'?'image/png':'image/jpeg';
+      const qual=fmt==='jpeg'?0.93:undefined;
+      const ext=fmt==='jpeg'?'jpg':'png';
+      const blob=await new Promise(res=>s.editCanvas.toBlob(res,mime,qual));
+      if(window.showSaveFilePicker){
+        try{
+          const fh=await window.showSaveFilePicker({
+            suggestedName:name+'.'+ext,startIn:'desktop',
+            types:[{description:fmt.toUpperCase(),accept:{[mime]:['.'+(fmt==='jpeg'?'jpg':fmt)]}}],
+          });
+          const w=await fh.createWritable(); await w.write(blob); await w.close();
+          $i('progFill').style.width='100%'; $i('progLbl').textContent='✅ Đã lưu: '+fh.name;
+        }catch(e){
+          if(e.name!=='AbortError'){_dlBlob(blob,name+'.'+ext);$i('progLbl').textContent='✅ Đã tải: '+name+'.'+ext;}
+        }
+      }else{
+        _dlBlob(blob,name+'.'+ext);
+        $i('progFill').style.width='100%'; $i('progLbl').textContent='✅ Đã tải: '+name+'.'+ext;
+      }
+    }
+  }catch(err){
+    $i('progLbl').textContent='❌ Lỗi: '+err.message; console.error(err);
+  }finally{
+    btn.disabled=false; btn.textContent='⬇️ Tải đề sạch';
+  }
+}
+
+// ── Upload handler ───────────────────────────
+dragDrop('cleanImgZone','cleanImgInput');
+$i('cleanImgInput').addEventListener('change', async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const img=await loadImg(URL.createObjectURL(f)).catch(()=>null);
+  if(!img){alert('Không đọc được ảnh!');return;}
+  initCleanCanvas(img);
+  $i('cleanImgZone').classList.add('ok');
+  $i('cleanImgInfo').textContent=`✓ ${f.name} — ${img.naturalWidth}×${img.naturalHeight}px`;
+  if(activeTab==='clean') refreshCleanUI();
+});
+
+// ── Canvas mouse handlers ────────────────────
+const _cleanCanvas=$i('previewCanvas');
+_cleanCanvas.addEventListener('mousedown',e=>{
+  if(activeTab!=='clean') return;
+  const s=STATES.clean; if(!s.editCtx) return;
+  const rect=_cleanCanvas.getBoundingClientRect();
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  saveCleanSnapshot();
+  if(s.tool==='brush'){ s.isDrawing=true; brushWhite(mx,my); }
+  else if(s.tool==='fill') floodFillWhite(mx,my);
+  else if(s.tool==='colorRange') removeColorRange(mx,my);
+  e.preventDefault();
+});
+_cleanCanvas.addEventListener('mousemove',e=>{
+  if(activeTab!=='clean') return;
+  const s=STATES.clean;
+  if(!s.isDrawing||s.tool!=='brush') return;
+  const rect=_cleanCanvas.getBoundingClientRect();
+  brushWhite(e.clientX-rect.left,e.clientY-rect.top);
+  e.preventDefault();
+});
+_cleanCanvas.addEventListener('mouseup',   ()=>{ if(activeTab==='clean') STATES.clean.isDrawing=false; });
+_cleanCanvas.addEventListener('mouseleave',()=>{ if(activeTab==='clean') STATES.clean.isDrawing=false; });
+
+// ── Keyboard: Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z ─
+// (injected vào keydown handler hiện tại — xem bên dưới)
+
+// ══════════════════════════════════════════════
 //  LAYOUT PRESETS  (localStorage)
 // ══════════════════════════════════════════════
 const _PRESET_KEY = 'pmLayoutPresets_v1';
@@ -3692,6 +4046,11 @@ function importLayoutPresets(inp) {
 function openHelp(){ $i('helpOv').classList.add('on'); }
 function closeHelp(){ $i('helpOv').classList.remove('on'); }
 document.addEventListener('keydown', e=>{
+  // Clean tab: Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z
+  if(activeTab==='clean'){
+    if((e.ctrlKey||e.metaKey)&&e.key==='z'&&!e.shiftKey){e.preventDefault();cleanUndo();return;}
+    if((e.ctrlKey||e.metaKey)&&(e.key==='y'||(e.key==='z'&&e.shiftKey))){e.preventDefault();cleanRedo();return;}
+  }
   if(e.key==='?' || (e.key==='F1' && !e.ctrlKey)) { e.preventDefault(); openHelp(); }
   if(e.key==='Escape'){ closeHelp(); closeSaveModal(); }
 });
