@@ -10,7 +10,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Lora:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@400;600;700&family=Raleway:ital,wght@0,400;0,600;0,700;1,400&family=Cinzel:wght@400;600;700&family=Josefin+Sans:wght@400;600;700&family=Nunito:wght@400;600;700&family=Bebas+Neue&family=Playfair+Display+SC:wght@400;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -265,15 +264,22 @@ body.light .hbadge{background:var(--adim);color:var(--ac);border-color:var(--ac-
 /* PDF inline editor — floating contenteditable trên canvas */
 #pdfInlineEdit{
   position:absolute;display:none;z-index:60;
-  min-width:60px;padding:1px 4px;
-  background:rgba(240,192,96,.07);
-  border:1.5px dashed var(--ac);
-  border-radius:3px;outline:none;
-  white-space:pre;line-height:1.25;
+  min-width:120px;padding:5px 9px;
+  background:#fffde7;          /* nền vàng nhạt, luôn nhìn rõ */
+  border:2px solid #f0c060;
+  border-radius:5px;outline:none;
+  white-space:pre;line-height:1.35;
   cursor:text;box-sizing:border-box;
-  text-shadow:0 0 4px rgba(0,0,0,.6); /* giúp dễ đọc trên mọi nền */
+  color:#1a1a1a !important;    /* chữ đen cố định — dễ đọc mọi nền */
+  box-shadow:0 4px 18px rgba(0,0,0,.35),0 0 0 3px rgba(240,192,96,.3);
 }
-#pdfInlineEdit:focus{border-color:#f0c060;background:rgba(240,192,96,.12)}
+#pdf-edit-hint{
+  position:absolute;z-index:61;
+  background:rgba(0,0,0,.72);color:#f0c060;
+  font-size:10px;padding:2px 7px;border-radius:3px;
+  white-space:nowrap;pointer-events:none;display:none;
+  font-family:monospace;
+}
 /* Tooltip hint double-click */
 .pdf-dblclick-hint{font-size:11px;color:var(--mu);margin-top:5px;font-style:italic}
 #previewCanvas.move-cur{cursor:move}
@@ -836,6 +842,7 @@ body.light .if-match-row{background:var(--sf)}
         <div class="coord-tip" id="coordTip"></div>
         <!-- Inline editor: hiện khi double-click lên PDF (PDF Form mode) -->
         <div id="pdfInlineEdit" contenteditable="true" spellcheck="false"></div>
+        <div id="pdf-edit-hint">✏️ Enter = xác nhận · Esc = hủy</div>
       </div>
     </div>
 
@@ -1685,25 +1692,35 @@ function _showPdfInlineEdit(field) {
   const s = STATES.pdf;
   const sc = s.previewScale;
   const el = $i('pdfInlineEdit');
+  const hint = $i('pdf-edit-hint');
   _pdfEditId = field.id;
 
-  // Tính offset dựa vào baseline
-  let topOffset = 0;
-  if (!field.baseline || field.baseline === 'alphabetic') topOffset = -(field.size * 0.82);
-  else if (field.baseline === 'middle')  topOffset = -(field.size * 0.5);
-  else if (field.baseline === 'bottom')  topOffset = -field.size;
-  // 'top' → offset = 0
+  // Offset baseline: đưa top-left của editor về đúng vị trí text
+  let topOff = 0;
+  const bs = field.baseline || 'alphabetic';
+  if (bs === 'alphabetic' || bs === 'ideographic') topOff = -(field.size * 0.80);
+  else if (bs === 'middle')  topOff = -(field.size * 0.50);
+  else if (bs === 'bottom')  topOff = -field.size;
+  // 'top' / 'hanging' → 0
 
-  el.style.left        = Math.round(field.x * sc) + 'px';
-  el.style.top         = Math.round((field.y + topOffset) * sc) + 'px';
-  el.style.fontFamily  = `"${field.font}", Arial, sans-serif`;
-  el.style.fontSize    = Math.max(10, Math.round(field.size * sc)) + 'px';
-  el.style.fontWeight  = field.bold   ? 'bold'   : 'normal';
-  el.style.fontStyle   = field.italic ? 'italic' : 'normal';
-  el.style.color       = field.color;
-  el.style.textAlign   = field.align;
-  el.style.display     = 'block';
+  const edLeft = Math.round(field.x * sc);
+  const edTop  = Math.round((field.y + topOff) * sc);
+
+  el.style.left       = edLeft + 'px';
+  el.style.top        = edTop  + 'px';
+  el.style.fontFamily = `"${field.font}", Arial, sans-serif`;
+  el.style.fontSize   = Math.max(11, Math.round(field.size * sc)) + 'px';
+  el.style.fontWeight = field.bold   ? 'bold'   : 'normal';
+  el.style.fontStyle  = field.italic ? 'italic' : 'normal';
+  el.style.textAlign  = field.align;
+  // KHÔNG dùng field.color — luôn dùng chữ đen để dễ đọc trên mọi nền
+  el.style.display    = 'block';
   el.innerText = field.value || '';
+
+  // Tooltip hint bên trên editor
+  hint.style.left    = edLeft + 'px';
+  hint.style.top     = Math.max(0, edTop - 22) + 'px';
+  hint.style.display = 'block';
 
   // Focus và đặt cursor cuối
   el.focus();
@@ -1717,6 +1734,7 @@ function _showPdfInlineEdit(field) {
 
 function _hidePdfInlineEdit(save = true) {
   const el = $i('pdfInlineEdit');
+  $i('pdf-edit-hint').style.display = 'none';
   if (!_pdfEditId) return;
   if (save) {
     const val = el.innerText || '';
@@ -3293,38 +3311,23 @@ function refreshPDFUI(){
 }
 
 // ══════════════════════════════════════════════
-//  XUẤT WORD (.docx) — giữ nguyên định dạng
+//  XUẤT WORD (.docx) — dùng JSZip, không cần thư viện ngoài
 // ══════════════════════════════════════════════
 async function exportToWord(){
   const s=STATES.pdf;
   if(!s.templateImg) return;
-  if(!window.docx){ alert('Thư viện Word chưa tải xong, thử lại sau vài giây!'); return; }
 
   const btn=$i('expWordBtn');
   btn.disabled=true; btn.textContent='⏳ Đang tạo Word...';
 
   try{
-    // 1. Render toàn bộ nội dung (PDF + cover + photo + text) lên canvas full-res
+    // 1. Render toàn bộ (PDF nền + cover + ảnh thẻ + text) → canvas full-res
     const cv=document.createElement('canvas');
     cv.width=s.tW; cv.height=s.tH;
     const ctx=cv.getContext('2d');
-
-    // Nền PDF
     ctx.drawImage(s.templateImg,0,0);
-
-    // Vùng che trắng
-    for(const b of s.coverBlocks){
-      ctx.fillStyle='#ffffff';
-      ctx.fillRect(b.x,b.y,b.w,b.h);
-    }
-
-    // Ảnh thẻ
-    if(s.photo?.img){
-      const p=s.photo;
-      ctx.drawImage(p.img,p.x,p.y,p.w,p.h);
-    }
-
-    // Trường văn bản
+    for(const b of s.coverBlocks){ctx.fillStyle='#fff';ctx.fillRect(b.x,b.y,b.w,b.h);}
+    if(s.photo?.img){const p=s.photo;ctx.drawImage(p.img,p.x,p.y,p.w,p.h);}
     for(const f of s.textFields){
       if(!f.value) continue;
       await ensureFont(f.font);
@@ -3332,71 +3335,118 @@ async function exportToWord(){
       ctx.textAlign=f.align; ctx.textBaseline=f.baseline||'alphabetic';
       if(f.shadow){ctx.shadowColor='rgba(0,0,0,.4)';ctx.shadowBlur=4;ctx.shadowOffsetX=ctx.shadowOffsetY=2;}
       if(f.stroke){ctx.strokeStyle=f.strokeColor;ctx.lineWidth=f.strokeWidth*2;ctx.lineJoin='round';ctx.strokeText(f.value,f.x,f.y);}
-      ctx.fillStyle=f.color;
-      ctx.fillText(f.value,f.x,f.y);
+      ctx.fillStyle=f.color; ctx.fillText(f.value,f.x,f.y);
       ctx.shadowColor='transparent';ctx.shadowBlur=0;
     }
 
-    // 2. Chuyển canvas → PNG ArrayBuffer
+    // 2. PNG blob
     const pngBlob=await new Promise(res=>cv.toBlob(res,'image/png',1.0));
-    const imgBuf=await pngBlob.arrayBuffer();
+    const pngBuf=await pngBlob.arrayBuffer();
 
-    // 3. Tính kích thước trang Word
-    // pdf.js render ở scale=2 → chia 2 để về kích thước PDF gốc (72dpi points)
-    // 1 point = 20 twips (đơn vị Word)
+    // 3. Kích thước trang DOCX
+    // pdf.js render scale=2 → s.tW/2 = kích thước PDF gốc tính bằng points (72dpi)
+    // Ảnh trong DOCX đo bằng EMU: 1 point (72dpi) = 12700 EMU
+    // Trang Word đo bằng twips: 1 point = 20 twips
     const ptW=s.tW/2, ptH=s.tH/2;
-    const twW=Math.round(ptW*20), twH=Math.round(ptH*20);
+    const cxEMU=Math.round(ptW*12700), cyEMU=Math.round(ptH*12700);
+    const pgW=Math.round(ptW*20),      pgH=Math.round(ptH*20);
+    const orient=s.tW>s.tH?' w:orient="landscape"':'';
 
-    // 4. Tạo Document với docx.js
-    const {Document,Packer,Paragraph,ImageRun}=window.docx;
-    const doc=new Document({
-      sections:[{
-        properties:{
-          page:{
-            size:{width:twW,height:twH,orientation:s.tW>s.tH?'landscape':'portrait'},
-            margin:{top:0,right:0,bottom:0,left:0,footer:0,header:0,gutter:0},
-          },
-        },
-        children:[
-          new Paragraph({
-            spacing:{before:0,after:0,line:240},
-            children:[
-              new ImageRun({
-                data:imgBuf,
-                transformation:{width:Math.round(ptW),height:Math.round(ptH)},
-                type:'png',
-              }),
-            ],
-          }),
-        ],
-      }],
+    // 4. Xây XML DOCX thủ công
+    const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+  xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing"
+  xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
+  xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+  <w:body>
+    <w:p>
+      <w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>
+      <w:r>
+        <w:drawing>
+          <wp:inline distT="0" distB="0" distL="0" distR="0">
+            <wp:extent cx="${cxEMU}" cy="${cyEMU}"/>
+            <wp:effectExtent l="0" t="0" r="0" b="0"/>
+            <wp:docPr id="1" name="img"/>
+            <wp:cNvGraphicFramePr><a:graphicFrameLocks noChangeAspect="1"/></wp:cNvGraphicFramePr>
+            <a:graphic>
+              <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+                <pic:pic>
+                  <pic:nvPicPr>
+                    <pic:cNvPr id="0" name="image1.png"/>
+                    <pic:cNvPicPr/>
+                  </pic:nvPicPr>
+                  <pic:blipFill>
+                    <a:blip r:embed="rId1"/>
+                    <a:stretch><a:fillRect/></a:stretch>
+                  </pic:blipFill>
+                  <pic:spPr>
+                    <a:xfrm><a:off x="0" y="0"/><a:ext cx="${cxEMU}" cy="${cyEMU}"/></a:xfrm>
+                    <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                  </pic:spPr>
+                </pic:pic>
+              </a:graphicData>
+            </a:graphic>
+          </wp:inline>
+        </w:drawing>
+      </w:r>
+    </w:p>
+    <w:sectPr>
+      <w:pgSz w:w="${pgW}" w:h="${pgH}"${orient}/>
+      <w:pgMar w:top="0" w:right="0" w:bottom="0" w:left="0" w:header="0" w:footer="0" w:gutter="0"/>
+    </w:sectPr>
+  </w:body>
+</w:document>`;
+
+    const contentTypes=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml"  ContentType="application/xml"/>
+  <Default Extension="png"  ContentType="image/png"/>
+  <Override PartName="/word/document.xml"
+    ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`;
+
+    const appRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+    const docRels=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/image1.png"/>
+</Relationships>`;
+
+    // 5. Đóng gói ZIP bằng JSZip (đã có sẵn)
+    const zip=new JSZip();
+    zip.file('[Content_Types].xml', contentTypes);
+    zip.file('_rels/.rels',         appRels);
+    zip.file('word/document.xml',   docXml);
+    zip.file('word/_rels/document.xml.rels', docRels);
+    zip.file('word/media/image1.png', pngBuf);
+
+    const docxBlob=await zip.generateAsync({
+      type:'blob',
+      mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     });
 
-    // 5. Xuất blob và mở hộp thoại lưu
-    const wordBlob=await Packer.toBlob(doc);
+    // 6. Lưu file
     const fname=($i('pdfFileName').value||'output').replace(/[\/\\:*?"<>|]/g,'_');
-
     if(window.showSaveFilePicker){
       try{
         const fh=await window.showSaveFilePicker({
-          suggestedName:fname+'.docx',
-          startIn:'desktop',
+          suggestedName:fname+'.docx', startIn:'desktop',
           types:[{description:'Word Document',accept:{'application/vnd.openxmlformats-officedocument.wordprocessingml.document':['.docx']}}],
         });
         const w=await fh.createWritable();
-        await w.write(wordBlob);
-        await w.close();
+        await w.write(docxBlob); await w.close();
         showToast('✅ Đã lưu Word: '+fh.name);
       }catch(e){
-        if(e.name!=='AbortError'){
-          // Fallback download
-          _dlBlob(wordBlob,fname+'.docx');
-          showToast('✅ Đã tải Word: '+fname+'.docx');
-        }
+        if(e.name!=='AbortError'){_dlBlob(docxBlob,fname+'.docx');showToast('✅ Đã tải: '+fname+'.docx');}
       }
     }else{
-      _dlBlob(wordBlob,fname+'.docx');
-      showToast('✅ Đã tải Word: '+fname+'.docx');
+      _dlBlob(docxBlob,fname+'.docx');
+      showToast('✅ Đã tải: '+fname+'.docx');
     }
 
   }catch(err){
