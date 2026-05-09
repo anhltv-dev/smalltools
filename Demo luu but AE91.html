@@ -524,8 +524,7 @@ var FIREBASE_CONFIG = {
   messagingSenderId: "THAY_BANG_MESSAGING_ID",
   appId: "THAY_BANG_APP_ID"
 };
-var fbOk=false;try{firebase.initializeApp(FIREBASE_CONFIG);fbOk=true;}catch(e){}
-var db=fbOk?firebase.database():null;
+var db=null;try{firebase.initializeApp(FIREBASE_CONFIG);db=firebase.database();}catch(e){console.warn("Firebase init failed:",e);}
 var KEY = "mot_thoi_ae91_v3";
 var allEntries=[];var targetPageAfterSave=0;
 var PW = 400, PH = 566;
@@ -1149,16 +1148,17 @@ window.addEventListener("load",function(){
     if(music.paused)music.play().then(function(){musicBtn.classList.add("playing");}).catch(function(){});
   },{once:true});
 
-  /* Firebase real-time sync */
+  /* Luôn hiển thị nội dung ngay (dùng SAMPLES nếu chưa có dữ liệu) */
+  buildAndInit(0);
+
+  /* Firebase real-time sync – cập nhật lại khi có dữ liệu */
   if(db){
     db.ref(KEY+"/entries").on("value",function(snap){
       var data=snap.val()||{};
       allEntries=Object.values(data).sort(function(a,b){return a.timestamp-b.timestamp;});
       buildAndInit(targetPageAfterSave);
       targetPageAfterSave=0;
-    },function(err){buildAndInit(0);});
-  }else{
-    buildAndInit(0);
+    },function(err){console.warn("Firebase read error:",err);});
   }
 });
 
