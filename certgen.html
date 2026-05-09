@@ -164,6 +164,23 @@ footer .f-ver{background:var(--sf3);border:1px solid var(--bd);color:var(--mu);b
 .step-btn-s{padding:2px 8px;font-size:10px;background:var(--sf2);border:1px solid var(--bd2);color:var(--mu);border-radius:3px;cursor:pointer;transition:.1s}
 .step-btn-s.active{background:var(--adim);color:var(--ac);border-color:var(--ac-bd)}
 .pos-box{background:var(--bg);border:1px solid var(--bd);border-radius:5px;padding:8px;text-align:center;margin-top:6px}
+/* Per-student crop indicators */
+.crop-saved-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(112,214,160,.15);border:1px solid rgba(112,214,160,.4);color:var(--grn)}
+.crop-tag-mt{display:inline-block;font-size:9px;padding:1px 5px;border-radius:8px;background:rgba(168,122,240,.18);border:1px solid var(--cert-bd);color:var(--cert);margin-left:3px;vertical-align:middle;white-space:nowrap}
+.crop-panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.crop-status-row{display:flex;align-items:center;gap:6px;padding:5px 7px;background:var(--bg);border:1px solid var(--bd);border-radius:5px;margin-bottom:6px;font-size:11px}
+.crop-autosave-note{font-size:10px;color:var(--mu);font-style:italic;margin-top:4px;text-align:center}
+/* Export filter */
+.exp-filter{background:var(--sf2);border:1px solid var(--bd);border-radius:6px;padding:8px 10px;margin-bottom:9px}
+.exp-filter-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--mu);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.exp-filter-modes{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:0}
+.exp-fmode{flex:1;min-width:0;padding:5px 6px;border-radius:5px;border:1px solid var(--bd2);background:var(--bg);color:var(--mu);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);text-align:center;transition:.12s;white-space:nowrap}
+.exp-fmode:hover{border-color:var(--ac-bd);color:var(--ac)}
+.exp-fmode.active{background:var(--adim);border-color:var(--ac-bd);color:var(--ac)}
+.exp-range-row{display:flex;align-items:center;gap:6px;margin-top:7px;font-size:12px;color:var(--mu)}
+.exp-range-row input{width:62px;background:var(--bg);border:1px solid var(--bd2);color:var(--tx);border-radius:4px;padding:4px 6px;font-size:12px;font-family:var(--font);text-align:center}
+.exp-range-row input:focus{outline:none;border-color:var(--ac)}
+.exp-filter-preview{margin-top:6px;font-size:11px;font-family:monospace;color:var(--ac);min-height:16px}
 
 /* ══ LIGHT THEME ══ */
 body.light{
@@ -615,11 +632,31 @@ body.light{--clean:#c2410c;--clean-dim:rgba(194,65,12,.09);--clean-bd:rgba(194,6
       </div>
       <div class="uinfo" id="xlsInfo"></div>
 
+      <!-- Nút cập nhật Excel — hiện khi có dữ liệu trong cert mode -->
+      <div id="xlsUpdateBanner" style="display:none;margin-top:5px;padding:8px 10px;border-radius:7px;background:rgba(168,122,240,.08);border:1px solid rgba(168,122,240,.25)">
+        <div style="font-size:11px;color:var(--mu);margin-bottom:6px">📊 <b style="color:var(--cert)">Cập nhật Excel</b> — Dữ liệu mới sẽ được bổ sung, hàng đã có sẽ được cập nhật, ghép ảnh giữ nguyên</div>
+        <label style="display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:7px 12px;background:var(--cert-dim);border:1px solid var(--cert-bd);border-radius:5px;color:var(--cert);font-size:12px;font-weight:600;transition:.15s" onmouseover="this.style.background='rgba(168,122,240,.22)'" onmouseout="this.style.background='var(--cert-dim)'">
+          <input type="file" accept=".xlsx,.xls,.csv" id="xlsUpdateInput" style="display:none">
+          🔄 Chọn file Excel mới để cập nhật bổ sung
+        </label>
+      </div>
+
       <div id="photoSection" style="display:none">
         <!-- Hiển thị khi tải phiên còn thiếu ảnh -->
         <div class="restore-banner" id="photoRestoreBanner" style="display:none">
           <div style="font-weight:600;color:var(--cert);margin-bottom:7px">📷 <span id="photoRestoreMsg">Thiếu ảnh — chọn lại thư mục để khôi phục</span></div>
           <button class="btn cert" onclick="pickPhotoFolderForRestore()" style="font-size:12px;padding:6px 14px">📁 Chọn thư mục ảnh để khôi phục</button>
+        </div>
+        <!-- Nút cập nhật ảnh — thêm/thay ảnh mới, không xóa ghép cũ -->
+        <div id="photoUpdateSection" style="display:none;margin-bottom:8px;padding:8px 10px;border-radius:7px;background:rgba(168,122,240,.08);border:1px solid rgba(168,122,240,.25)">
+          <div style="font-size:11px;color:var(--mu);margin-bottom:6px">🖼️ <b style="color:var(--cert)">Cập nhật ảnh</b> — Ảnh mới được thêm vào, ảnh cùng tên sẽ được thay thế, ghép ảnh hiện tại giữ nguyên</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="pickPhotoFolderForUpdate()" style="flex:1;padding:6px 8px;background:var(--cert-dim);border:1px solid var(--cert-bd);border-radius:5px;color:var(--cert);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s" onmouseover="this.style.background='rgba(168,122,240,.22)'" onmouseout="this.style.background='var(--cert-dim)'">📁 Từ thư mục</button>
+            <label style="flex:1;display:flex;align-items:center;justify-content:center;padding:6px 8px;background:var(--cert-dim);border:1px solid var(--cert-bd);border-radius:5px;color:var(--cert);font-size:11px;font-weight:600;cursor:pointer;transition:.15s" onmouseover="this.style.background='rgba(168,122,240,.22)'" onmouseout="this.style.background='var(--cert-dim)'">
+              <input type="file" accept="image/*" multiple id="photoUpdateInput" style="display:none">
+              🖼️ Chọn file ảnh
+            </label>
+          </div>
         </div>
         <div class="folder-tab-bar">
           <button class="folder-tab active" id="tabFolderMode" onclick="setPhotoMode('folder')">📁 Upload thư mục lớp</button>
@@ -932,6 +969,22 @@ body.light{--clean:#c2410c;--clean-dim:rgba(194,65,12,.09);--clean-bd:rgba(194,6
 
       <!-- INV / CERT export controls -->
       <div id="invCertExpBar">
+        <!-- BỘ LỌC PHẠM VI XUẤT -->
+        <div class="exp-filter" id="expFilterBox">
+          <div class="exp-filter-title">📤 Phạm vi xuất</div>
+          <div class="exp-filter-modes">
+            <button class="exp-fmode active" id="fmodeAll"     onclick="setExpMode('all')">✅ Tất cả</button>
+            <button class="exp-fmode"        id="fmodeRange"   onclick="setExpMode('range')">📏 Từ–đến</button>
+            <button class="exp-fmode"        id="fmodeCurrent" onclick="setExpMode('current')">👁️ Dòng này</button>
+          </div>
+          <div class="exp-range-row" id="expRangeRow" style="display:none">
+            <span>Từ dòng</span>
+            <input type="number" id="expRangeFrom" min="1" value="1" oninput="updateExpPreview()">
+            <span>đến dòng</span>
+            <input type="number" id="expRangeTo"   min="1" value="1" oninput="updateExpPreview()">
+          </div>
+          <div class="exp-filter-preview" id="expFilterPreview"></div>
+        </div>
         <div class="exp-settings">
           <div class="fg">
             <label>Định dạng</label>
@@ -1146,6 +1199,7 @@ function switchTab(tab) {
   refreshUI();
   updateCertBar();
   renderPresetList(); // cập nhật danh sách bố cục theo tab hiện tại
+  updateSessionUpdateBanners(); // cập nhật nút cập nhật phiên
 }
 
 // ══════════════════════════════════════════════
@@ -1199,6 +1253,12 @@ function applyXlsData(data, fname, uiLabel){
   $i('xlsInfo').textContent=`✓ ${fname} — ${data.length} dòng | Cột B: ${eH(s.nameCol)}`;
   refreshColChips(); refreshFNSel(); refreshUI(); updateFnPreview();
   if(activeTab==='cert'){ refreshNameColSel(); renderMatchTable(); }
+  updateSessionUpdateBanners();
+  // Cập nhật bộ lọc xuất file
+  const tot = CS().records.length;
+  if ($i('expRangeTo')) $i('expRangeTo').value = tot;
+  if ($i('expRangeFrom') && !$i('expRangeFrom').value) $i('expRangeFrom').value = 1;
+  updateExpPreview();
   return true;
 }
 
@@ -1237,6 +1297,7 @@ $i('photoInput').addEventListener('change', async e=>{
     autoMatchPhotos();
     renderMatchTable();
     buildMatchStats();
+    autoRestoreCrops(); // Khôi phục căn chỉnh ảnh thủ công từ lần trước
   }
   renderCanvas(); updateCertBar();
 });
@@ -1326,6 +1387,8 @@ $i('folderInput').addEventListener('change', async e=>{
     renderImageFields();
     updateCertBar();
     buildMatchStats();
+    // Khôi phục căn chỉnh ảnh thủ công từ lần trước (nếu có)
+    autoRestoreCrops();
   }, 150);
 });
 
@@ -1567,20 +1630,41 @@ function renderImageFields(){
 
       <!-- Per-student crop d-pad -->
       <div class="crop-dpad-wrap">
-        <div class="crop-dpad-title">
-          <span>✂️ Căn chỉnh ảnh học sinh này</span>
-          <span class="crop-offset-label">${hasCrop?`${crop.x>0?'+':''}${crop.x}, ${crop.y>0?'+':''}${crop.y}`:''}</span>
+        <div class="crop-panel-header">
+          <span style="font-size:11px;font-weight:700;color:var(--cert)">✂️ Căn chỉnh ảnh — học sinh này</span>
+          ${hasCrop
+            ? `<span class="crop-saved-badge">✅ Đã lưu</span>`
+            : `<span style="font-size:10px;color:var(--mu)">Chưa chỉnh riêng</span>`
+          }
+        </div>
+        <div class="crop-status-row">
+          ${photoEntry
+            ? `<img src="${photoEntry.url}" style="width:32px;height:32px;object-fit:cover;border-radius:50%;border:2px solid ${hasCrop?'var(--grn)':'var(--bd2)'};flex-shrink:0">`
+            : `<span style="font-size:20px;opacity:.3;flex-shrink:0">👤</span>`
+          }
+          <div style="flex:1;min-width:0">
+            <div style="font-size:11px;color:var(--tx);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+              ${eH(String((s.records[s.currentIdx]||{})[s.nameCol||s.cols[0]||'']||`HS #${s.currentIdx+1}`))}
+            </div>
+            <div style="font-size:10px;color:var(--mu);font-family:monospace">
+              ${hasCrop
+                ? `Offset: <b style="color:var(--tx)">${crop.x>0?'+':''}${crop.x}px, ${crop.y>0?'+':''}${crop.y}px</b>`
+                : `Dùng vị trí chung (chưa chỉnh riêng)`
+              }
+            </div>
+          </div>
+          ${hasCrop?`<button onclick="resetCropCurrent()" style="background:none;border:1px solid var(--bd2);color:var(--mu);cursor:pointer;font-size:10px;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0" title="Xoá căn chỉnh riêng của HS này">↺ Reset</button>`:''}
         </div>
         <div style="display:flex;align-items:flex-start;gap:10px">
           <div>
             <div class="dpad">
-              <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCrop(${f.id},0,-${cst})">↑</button></div>
+              <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCrop(${f.id},0,-${cst})" title="Dịch ảnh lên">↑</button></div>
               <div class="dpad-row">
-                <button class="dpad-btn" onclick="nudgeCrop(${f.id},-${cst},0)">←</button>
+                <button class="dpad-btn" onclick="nudgeCrop(${f.id},-${cst},0)" title="Dịch ảnh sang trái">←</button>
                 <div class="dpad-ctr">·</div>
-                <button class="dpad-btn" onclick="nudgeCrop(${f.id},${cst},0)">→</button>
+                <button class="dpad-btn" onclick="nudgeCrop(${f.id},${cst},0)" title="Dịch ảnh sang phải">→</button>
               </div>
-              <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCrop(${f.id},0,${cst})">↓</button></div>
+              <div class="dpad-row"><button class="dpad-btn" onclick="nudgeCrop(${f.id},0,${cst})" title="Dịch ảnh xuống">↓</button></div>
             </div>
             <div class="step-row" style="margin-top:5px">
               <span>Bước:</span>
@@ -1588,11 +1672,11 @@ function renderImageFields(){
             </div>
           </div>
           <div style="flex:1;padding-top:4px">
-            ${photoEntry?`<img src="${photoEntry.url}" style="width:100%;max-height:80px;object-fit:cover;border-radius:4px;border:1px solid var(--bd2)">`:'<div style="text-align:center;color:var(--mu);font-size:10px;margin-top:20px">Chưa ghép ảnh</div>'}
-            ${hasCrop?`<div style="margin-top:4px;text-align:right"><button onclick="resetCropCurrent()" style="background:none;border:none;color:var(--mu);cursor:pointer;font-size:10px" title="Reset crop học sinh này">↺ Reset</button></div>`:''}
+            ${photoEntry?`<img src="${photoEntry.url}" style="width:100%;max-height:80px;object-fit:cover;border-radius:4px;border:2px solid ${hasCrop?'var(--grn)':'var(--bd2)'}">`:'<div style="text-align:center;color:var(--mu);font-size:10px;margin-top:20px">Chưa ghép ảnh</div>'}
           </div>
         </div>
-        ${totalCropped>1?`<div style="font-size:10px;color:var(--mu);margin-top:6px;border-top:1px solid var(--bd);padding-top:5px">Đã crop: <b>${totalCropped}</b> HS &nbsp;·&nbsp; <button onclick="resetAllCrops(${f.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px">Xoá tất cả</button></div>`:''}
+        <div class="crop-autosave-note">💾 Tự động lưu — mỗi học sinh căn chỉnh độc lập</div>
+        ${totalCropped>0?`<div style="font-size:10px;color:var(--mu);margin-top:5px;border-top:1px solid var(--bd);padding-top:5px;display:flex;align-items:center;justify-content:space-between"><span>✏️ Đã chỉnh: <b style="color:var(--tx)">${totalCropped}</b> học sinh</span><button onclick="resetAllCrops(${f.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:10px;padding:0">Xoá tất cả</button></div>`:''}
       </div>
     </div>`;
   }).join('');
@@ -1890,6 +1974,7 @@ function toggleCropMode(id){
 function resetAllCrops(id){
   const f=CS().imageFields.find(x=>x.id===id);
   if(f){f.studentCrops={};f.cropX=0;f.cropY=0;}
+  autoSaveCrops();
   renderImageFields(); renderCanvas(); updateCertBar();
 }
 
@@ -2269,6 +2354,7 @@ function navigate(dir){
   s.currentIdx=Math.max(0,Math.min(s.records.length-1,s.currentIdx+dir));
   updateNav(); renderTextFields(); renderCanvas(); updateFnPreview();
   if(activeTab==='cert'){ renderImageFields(); renderMatchTable(); }
+  _refreshExpPreview();
 }
 function updateNav(){
   const s=CS(),n=s.records.length;
@@ -2310,11 +2396,16 @@ function updateCertBar(){
       <span class="cert-photo-pill ${info?'ok':'miss'}" title="${info?eH(info.filename):'Không tìm thấy ảnh'}">
         ${info?`📷 ${eH(info.filename)}`:'✗ Không tìm thấy ảnh'}
       </span>
-      ${hasCrop?`<span class="cert-badge-crop">✂️ Đã crop</span>`:''}
+      ${hasCrop?`<span class="cert-badge-crop">✂️ Đã căn chỉnh</span>`:''}
     `;
   }
   html+='</div>';
   html+='<div class="cert-bar-actions">';
+  // Tổng số HS đã căn chỉnh thủ công (tất cả image fields)
+  const totalAdjusted = s.imageFields.reduce((sum,f)=>sum+Object.keys(f.studentCrops||{}).length, 0);
+  if(totalAdjusted>0){
+    html+=`<span style="font-size:10px;color:var(--grn);background:rgba(112,214,160,.12);border:1px solid rgba(112,214,160,.35);padding:2px 7px;border-radius:10px">✏️ ${totalAdjusted} HS đã chỉnh</span>`;
+  }
   for(const f of s.imageFields){
     const isCrop=activeCropFieldId===f.id;
     html+=`<button class="btn btn-sm btn-pick ${isCrop?'live':'idle'}" onclick="toggleCropMode(${f.id})" title="Kéo ảnh trên canvas để căn chỉnh vùng hiển thị (riêng từng học sinh)">
@@ -2333,6 +2424,7 @@ function resetCropCurrent(){
   for(const f of s.imageFields){
     if(f.studentCrops) delete f.studentCrops[s.currentIdx];
   }
+  autoSaveCrops(); // Lưu lại sau khi reset
   renderImageFields(); renderCanvas(); updateCertBar();
 }
 
@@ -2481,9 +2573,11 @@ function renderMatchTable(){
     const name=String(rec[col]||'');
     const m=s.matchMap[i];
     const isCur=i===s.currentIdx;
+    // Check if this student has any manual crop adjustments
+    const hasCropAdj = s.imageFields.some(f=>f.studentCrops&&f.studentCrops[i]);
     return `<tr class="${isCur?'current-row':''}" onclick="navigateTo(${i})">
       <td class="mt-idx">${i+1}</td>
-      <td class="mt-name" title="${eH(name)}">${eH(name||'—')}</td>
+      <td class="mt-name" title="${eH(name)}">${eH(name||'—')}${hasCropAdj?`<span class="crop-tag-mt" title="Đã căn chỉnh ảnh thủ công">✏️</span>`:''}</td>
       <td>${m
         ?`<div class="mt-photo" onclick="event.stopPropagation();openPhotoSelector(${i})" title="Click để đổi ảnh"><img class="mt-thumb" src="${m.url}"><span class="mt-fname" title="${eH(m.filename)}">${eH(m.filename)}</span><button class="mt-clear" onclick="event.stopPropagation();clearMatch(${i})" title="Xoá ghép">✕</button></div>`
         :`<span class="mt-empty" onclick="event.stopPropagation();openPhotoSelector(${i})">＋ Chọn ảnh</span>`
@@ -2505,6 +2599,7 @@ function updateMatchStats(){
 function navigateTo(idx){
   const s=CS(); s.currentIdx=idx;
   updateNav(); renderTextFields(); renderCanvas(); updateFnPreview(); renderImageFields();
+  _refreshExpPreview();
 }
 
 // ── PHOTO SELECTOR ──
@@ -2597,11 +2692,60 @@ function nudgeIF(id, dx, dy){
 function setIFStep(v){ CS().ifStep=v; renderImageFields(); }
 
 // ── D-PAD for per-student crop ──
+// ── AUTO-SAVE & AUTO-RESTORE per-student crops (localStorage) ──
+function _getCropsKey(){
+  const s=STATES.cert;
+  if(!s.records.length||!s.tW) return null;
+  // Key dựa vào kích thước template + số bản ghi (đủ để phân biệt các lần dùng khác nhau)
+  return `pm_crops_v2_${s.tW}x${s.tH}_r${s.records.length}`;
+}
+
+function autoSaveCrops(){
+  const key=_getCropsKey(); if(!key) return;
+  const s=STATES.cert;
+  // Lưu theo chỉ số imageField (không phải ID — ổn định hơn khi apply preset)
+  const cropsData={};
+  s.imageFields.forEach((f,fi)=>{
+    const sc=f.studentCrops||{};
+    if(Object.keys(sc).length) cropsData[fi]=sc;
+  });
+  try{ localStorage.setItem(key, JSON.stringify({savedAt:Date.now(),crops:cropsData})); }catch{}
+}
+
+function autoRestoreCrops(){
+  const key=_getCropsKey(); if(!key) return;
+  const s=STATES.cert;
+  try{
+    const raw=localStorage.getItem(key); if(!raw) return;
+    const saved=JSON.parse(raw);
+    if(!saved?.crops) return;
+    let total=0;
+    s.imageFields.forEach((f,fi)=>{
+      const sc=saved.crops[fi];
+      if(sc){
+        if(!f.studentCrops) f.studentCrops={};
+        // Merge: ưu tiên giá trị hiện tại nếu đã có, còn lại khôi phục từ localStorage
+        for(const [idx,val] of Object.entries(sc)){
+          if(!f.studentCrops[idx]) { f.studentCrops[idx]=val; total++; }
+        }
+      }
+    });
+    if(total>0){
+      const ageMin=Math.round((Date.now()-(saved.savedAt||0))/60000);
+      const ageStr=ageMin<60?`${ageMin} phút trước`:`${Math.round(ageMin/60)} giờ trước`;
+      showToast(`♻️ Đã khôi phục ${total} căn chỉnh ảnh tự động (lưu ${ageStr})`,4500);
+      renderImageFields(); renderMatchTable(); renderCanvas(); updateCertBar();
+    }
+  }catch{}
+}
+
 function nudgeCrop(id, dx, dy){
   const s=CS(); const f=s.imageFields.find(x=>x.id===id); if(!f) return;
   if(!f.studentCrops) f.studentCrops={};
   const cur=f.studentCrops[s.currentIdx]||{x:0,y:0};
   f.studentCrops[s.currentIdx]={x:cur.x+dx, y:cur.y+dy};
+  // Auto-save to localStorage ngay sau mỗi lần chỉnh
+  autoSaveCrops();
   renderImageFields(); renderCanvas(); updateCertBar();
 }
 function setCropStep(v){ CS().cropStep=v; renderImageFields(); }
@@ -2654,6 +2798,64 @@ async function savePDFWithPicker(doc, suggestedName) {
   }
 }
 
+// ══════════════════════════════════════════════
+//  BỘ LỌC PHẠM VI XUẤT
+// ══════════════════════════════════════════════
+let _expMode = 'all'; // 'all' | 'range' | 'current'
+
+function setExpMode(mode) {
+  _expMode = mode;
+  ['all','range','current'].forEach(m => {
+    const btn = $i('fmode' + m.charAt(0).toUpperCase() + m.slice(1));
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  const rangeRow = $i('expRangeRow');
+  if (rangeRow) rangeRow.style.display = mode === 'range' ? 'flex' : 'none';
+  updateExpPreview();
+}
+
+function updateExpPreview() {
+  const s = CS();
+  const total = s.records.length;
+  if (!total) { const p=$i('expFilterPreview'); if(p) p.textContent=''; return; }
+  const indices = getExportIndices();
+  const p = $i('expFilterPreview'); if (!p) return;
+  if (_expMode === 'all') {
+    p.textContent = `→ Sẽ xuất tất cả ${total} file`;
+  } else if (_expMode === 'current') {
+    const rec = s.records[s.currentIdx] || {};
+    const name = String(rec[s.nameCol||s.cols[0]||''] || `Dòng ${s.currentIdx+1}`);
+    p.textContent = `→ Chỉ xuất dòng ${s.currentIdx+1}: ${name}`;
+  } else {
+    const from = parseInt($i('expRangeFrom')?.value)||1;
+    const to   = parseInt($i('expRangeTo')?.value)||1;
+    if (from > to) { p.style.color='var(--red)'; p.textContent='⚠️ Dòng "từ" phải ≤ dòng "đến"'; return; }
+    p.style.color='var(--ac)';
+    p.textContent = `→ Sẽ xuất ${indices.length} file (dòng ${from}–${Math.min(to,total)})`;
+  }
+  p.style.color = 'var(--ac)';
+}
+
+function getExportIndices() {
+  const s = CS();
+  const total = s.records.length;
+  if (_expMode === 'current') return [s.currentIdx];
+  if (_expMode === 'range') {
+    const from = Math.max(1, parseInt($i('expRangeFrom')?.value)||1);
+    const to   = Math.min(total, Math.max(from, parseInt($i('expRangeTo')?.value)||total));
+    const arr = [];
+    for (let i = from-1; i < to; i++) arr.push(i);
+    return arr;
+  }
+  // 'all'
+  return Array.from({length: total}, (_,i)=>i);
+}
+
+// Cập nhật preview khi chuyển trang
+function _refreshExpPreview() {
+  if (_expMode === 'current') updateExpPreview();
+}
+
 function getExportParams() {
   return {
     fmt: $i('fmtSel').value,
@@ -2684,10 +2886,10 @@ async function renderRecord(canvas, rec) {
   return new Promise(r => canvas.toBlob(blob => r(blob), mime, quality));
 }
 
-function updateProgress(i, total) {
-  const pct = Math.round((i+1)/total*100);
+function updateProgress(done, total) {
+  const pct = Math.round(done/total*100);
   $i('progFill').style.width = pct+'%';
-  $i('progLbl').textContent = `${i+1} / ${total}  (${pct}%)`;
+  $i('progLbl').textContent = `${done} / ${total}  (${pct}%)`;
 }
 
 // ══════════════════════════════════════════════
@@ -2707,22 +2909,25 @@ async function exportToFolder() {
   try {
     dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
   } catch(e) {
-    if (e.name === 'AbortError') return; // user cancelled
+    if (e.name === 'AbortError') return;
     alert('Không thể mở thư mục: ' + e.message);
     return;
   }
 
+  const indices = getExportIndices();
+  if (!indices.length) { showToast('⚠️ Không có dòng nào trong phạm vi xuất!'); return; }
+
   startExport();
   const canvas = document.createElement('canvas');
   const { ext } = getExportParams();
-  const total = s.records.length;
-  let errors = 0;
+  const total = indices.length;
+  let done = 0, errors = 0;
 
-  for (let i = 0; i < total; i++) {
+  for (const i of indices) {
     s.currentIdx = i;
     const rec = s.records[i];
     const blob = await renderRecord(canvas, rec);
-    if (!blob) { errors++; continue; }
+    if (!blob) { errors++; done++; updateProgress(done, total); continue; }
 
     const filename = buildFilename(rec, i) + '.' + ext;
     try {
@@ -2734,12 +2939,14 @@ async function exportToFolder() {
       console.error('Write error:', filename, e);
       errors++;
     }
-    updateProgress(i, total);
+    done++;
+    updateProgress(done, total);
     await new Promise(r => setTimeout(r, 0));
   }
 
   const ok = total - errors;
-  endExport(`✅ Hoàn tất! ${ok}/${total} file đã lưu vào thư mục.${errors?` (${errors} lỗi)`:''}`);
+  const rangeNote = _expMode !== 'all' ? ` (phạm vi lọc)` : '';
+  endExport(`✅ Hoàn tất! ${ok}/${total} file đã lưu vào thư mục${rangeNote}.${errors?` (${errors} lỗi)`:''}`);
 }
 
 // ══════════════════════════════════════════════
@@ -2749,27 +2956,32 @@ async function exportToZip() {
   const s = CS();
   if (!s.templateImg || !s.records.length) return;
 
+  const indices = getExportIndices();
+  if (!indices.length) { showToast('⚠️ Không có dòng nào trong phạm vi xuất!'); return; }
+
   startExport();
   const zip = new JSZip();
   const canvas = document.createElement('canvas');
   const { ext } = getExportParams();
   const zipName = ($i('zipName').value || 'output').replace(/[\/\\:*?"<>|]/g,'_');
-  const total = s.records.length;
+  const total = indices.length;
+  let done = 0;
 
-  for (let i = 0; i < total; i++) {
+  for (const i of indices) {
     s.currentIdx = i;
     const rec = s.records[i];
     const blob = await renderRecord(canvas, rec);
-    if (!blob) continue;
+    if (!blob) { done++; continue; }
     const filename = buildFilename(rec, i) + '.' + ext;
     zip.file(filename, blob);
-    updateProgress(i, total);
+    done++;
+    updateProgress(done, total);
     await new Promise(r => setTimeout(r, 0));
   }
 
   const zblob = await zip.generateAsync({
     type: 'blob',
-    compression: 'STORE', // STORE = no recompression, faster + more compatible
+    compression: 'STORE',
   });
 
   const a = document.createElement('a');
@@ -2777,7 +2989,8 @@ async function exportToZip() {
   a.download = zipName + '.zip';
   a.click();
 
-  endExport(`✅ Hoàn tất! Đã xuất ${total} file → ${zipName}.zip`);
+  const rangeNote = _expMode !== 'all' ? ` (phạm vi lọc)` : '';
+  endExport(`✅ Hoàn tất! Đã xuất ${total} file${rangeNote} → ${zipName}.zip`);
   $i('progLbl').innerHTML += `<br><span style="color:var(--ac)">⚠️ Trước khi giải nén: chuột phải file ZIP → Properties → tích Unblock → OK</span>`;
 }
 
@@ -4245,6 +4458,10 @@ async function loadSession(sess){
   if(sess.tab==='cert'||activeTab==='cert'){ refreshNameColSel(); renderMatchTable(); }
   updateNav(); updateCertBar(); renderCanvas();
 
+  // Sau khi load session, thử khôi phục crops từ localStorage (nếu session không có)
+  // Chờ 200ms để state ổn định
+  setTimeout(()=>{ if(activeTab==='cert') autoRestoreCrops(); }, 200);
+
   // Cập nhật các UI input đồng bộ
   const sc=CS().previewScale;
   $i('scaleRange').value=Math.round(sc*100);
@@ -4274,6 +4491,162 @@ async function loadSession(sess){
       showToast(`✅ Đã mở phiên${sessLabel}!`);
     }
   }
+  // Hiện nút cập nhật nếu đang ở cert tab
+  updateSessionUpdateBanners();
+}
+
+// ══════════════════════════════════════════════
+//  CẬP NHẬT EXCEL (MERGE — KHÔNG XÓA GHÉP ẢNH)
+// ══════════════════════════════════════════════
+function mergeXlsUpdate(newData, fname) {
+  const s = CS();
+  if (!s.records.length) {
+    // Chưa có dữ liệu → load bình thường
+    applyXlsData(newData, fname, fname);
+    return;
+  }
+  if (!newData.length) { showToast('⚠️ File Excel không có dữ liệu!'); return; }
+
+  const newCols = Object.keys(newData[0]);
+  const oldLen  = s.records.length;
+  const newLen  = newData.length;
+
+  // ── Ghép theo VỊ TRÍ DÒNG (index) ──
+  // Cùng dòng = cùng học sinh, dù tên có thay đổi.
+  // matchMap giữ nguyên (key = recIdx), nên ảnh ghép không bị ảnh hưởng.
+  let updated = 0, added = 0;
+  for (let i = 0; i < newLen; i++) {
+    if (i < oldLen) {
+      // Ghi đè toàn bộ nội dung dòng cũ bằng dòng mới
+      s.records[i] = { ...newData[i] };
+      updated++;
+    } else {
+      // Dòng vượt quá số dòng cũ → thêm mới
+      s.records.push({ ...newData[i] });
+      added++;
+    }
+  }
+  // Nếu file mới ít dòng hơn → cắt bớt (và xoá matchMap thừa)
+  if (newLen < oldLen) {
+    s.records.splice(newLen);
+    for (const k of Object.keys(s.matchMap)) {
+      if (+k >= newLen) delete s.matchMap[k];
+    }
+    for (const k of Object.keys(s.matchMapFiles||{})) {
+      if (+k >= newLen) delete s.matchMapFiles[k];
+    }
+  }
+
+  // Bổ sung cột mới nếu có
+  s.cols = newCols; // dùng cột từ file mới (có thể đổi tên cột)
+
+  // Giữ nguyên nameCol nếu vẫn còn tồn tại, không thì reset về cột B
+  if (!s.cols.includes(s.nameCol)) {
+    s.nameCol = s.cols.length > 1 ? s.cols[1] : (s.cols[0] || '');
+  }
+
+  s.currentIdx = Math.min(s.currentIdx, s.records.length - 1);
+
+  $i('xlsZone').classList.add('ok');
+  const diffMsg = newLen < oldLen
+    ? `${updated} dòng cập nhật, xoá ${oldLen - newLen} dòng thừa`
+    : `${updated} dòng cập nhật${added ? `, thêm ${added} dòng mới` : ''}`;
+  $i('xlsInfo').textContent = `✓ ${fname} — ${s.records.length} dòng (${diffMsg})`;
+  refreshColChips(); refreshFNSel(); refreshUI(); updateFnPreview();
+  if (activeTab === 'cert') { refreshNameColSel(); renderMatchTable(); }
+  showToast(`✅ Đã cập nhật Excel theo thứ tự dòng: ${diffMsg}`);
+}
+
+$i('xlsUpdateInput').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  e.target.value = '';
+  const r = new FileReader();
+  r.onload = ev => {
+    try {
+      const wb = XLSX.read(ev.target.result, {type: 'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const hdr = findHeaderRow(ws);
+      const data = XLSX.utils.sheet_to_json(ws, {defval: '', range: hdr});
+      mergeXlsUpdate(data, f.name);
+    } catch(err) { showToast('❌ Lỗi đọc Excel: ' + err.message, 5000); }
+  };
+  r.readAsArrayBuffer(f);
+});
+
+// ══════════════════════════════════════════════
+//  CẬP NHẬT ẢNH (KHÔNG XÓA GHÉP HIỆN TẠI)
+// ══════════════════════════════════════════════
+async function _applyPhotoUpdate(files) {
+  const s = CS();
+  let added = 0, replaced = 0;
+  for (const f of files) {
+    if (!/\.(jpe?g|png|webp|gif|bmp)$/i.test(f.name)) continue;
+    const k = normKey(f.name);
+    const existed = s.photos.has(k);
+    const url = await compressPhotoFile(f, 1600);
+    s.photos.set(k, url);
+    s.photoNames.set(k, f.name);
+    if (existed) {
+      // Cập nhật URL trong matchMap cho những học sinh đang ghép ảnh này
+      for (const [idx, match] of Object.entries(s.matchMap)) {
+        if (normKey(match.filename) === k) {
+          s.matchMap[idx] = {...match, url};
+        }
+      }
+      replaced++;
+    } else {
+      added++;
+    }
+  }
+  autoMatchPhotos(); // ghép tự động những HS chưa có ảnh
+  renderMatchTable(); buildMatchStats(); renderCanvas(); updateCertBar();
+  $i('photoRestoreBanner').style.display = 'none';
+  showToast(`✅ Cập nhật ảnh: ${added} ảnh mới, ${replaced} ảnh thay thế`);
+}
+
+async function pickPhotoFolderForUpdate() {
+  if (window.showDirectoryPicker) {
+    try {
+      const dirHandle = await window.showDirectoryPicker({mode: 'read', startIn: 'desktop'});
+      const s = CS();
+      s.photoFolderName = dirHandle.name;
+      const zone = $i('folderZone');
+      if (zone) zone.querySelector('div').textContent = `⏳ Đang cập nhật ảnh...`;
+      const collected = [];
+      for await (const [, fh] of dirHandle.entries()) {
+        if (fh.kind !== 'file') continue;
+        const file = await fh.getFile();
+        collected.push(file);
+      }
+      await _applyPhotoUpdate(collected);
+      const total = s.photos.size;
+      if (zone) { zone.querySelector('div').textContent = `✓ ${total} ảnh (từ "${dirHandle.name}")`; zone.classList.add('ok'); }
+    } catch(e) {
+      if (e.name !== 'AbortError') showToast('❌ Lỗi: ' + e.message, 5000);
+    }
+  } else {
+    // Fallback: dùng input chọn thư mục
+    $i('folderInput').click();
+  }
+}
+
+$i('photoUpdateInput').addEventListener('change', async e => {
+  const files = Array.from(e.target.files); if (!files.length) return;
+  e.target.value = '';
+  showToast(`⏳ Đang cập nhật ${files.length} ảnh...`, 3000);
+  await _applyPhotoUpdate(files);
+});
+
+// ══════════════════════════════════════════════
+//  HIỆN/ẨN BANNER CẬP NHẬT THEO TRẠNG THÁI
+// ══════════════════════════════════════════════
+function updateSessionUpdateBanners() {
+  const isCert = activeTab === 'cert';
+  const hasRecords = CS().records.length > 0;
+  const xlsBanner = $i('xlsUpdateBanner');
+  const photoBanner = $i('photoUpdateSection');
+  if (xlsBanner)   xlsBanner.style.display   = (isCert && hasRecords) ? 'block' : 'none';
+  if (photoBanner) photoBanner.style.display  = (isCert && hasRecords) ? 'block' : 'none';
 }
 
 // Khởi tạo danh sách bố cục khi trang load
@@ -4293,7 +4666,7 @@ renderPresetList();
   </div>
   <div class="f-right">
     <span class="f-copy">© 2025 Woodsoft</span>
-    <span class="f-ver">v4.0</span>
+    <span class="f-ver">v4.1</span>
   </div>
 </footer>
 <div class="toast" id="toast"></div>
