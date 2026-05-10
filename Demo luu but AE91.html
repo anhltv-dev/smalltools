@@ -409,6 +409,16 @@ body{
 #btn-pw-ok{width:100%;padding:10px;margin-top:10px;background:linear-gradient(135deg,var(--b400),var(--b600));color:#fff;border:none;border-radius:7px;font-family:'Dancing Script',cursive;font-size:1.25rem;font-weight:700;cursor:pointer;transition:all 0.2s}
 #btn-pw-ok:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,80,160,0.35)}
 .pw-err{color:#c0392b;font-size:0.75rem;margin-top:6px;text-align:center;min-height:18px;font-family:'Be Vietnam Pro',sans-serif}
+/* ADMIN MODE */
+#btn-admin-open{border-color:rgba(200,60,60,0.3);background:#fff8f8;color:#c0392b;font-size:0.78rem;padding:6px 11px}
+#btn-admin-open:hover{background:#ffe8e8;border-color:#c0392b}
+#admin-badge{display:none;align-items:center;gap:4px;padding:5px 12px;background:#c0392b;color:#fff;border-radius:8px;font-size:0.7rem;font-weight:700;font-family:'Be Vietnam Pro',sans-serif;cursor:pointer;border:none}
+#admin-badge.show{display:inline-flex}
+#admin-badge:hover{background:#922b21}
+.sp-item-row{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.sp-item-info{flex:1;min-width:0}
+.sp-delete{background:none;border:1px solid rgba(200,60,60,0.4);color:#c0392b;border-radius:4px;font-size:0.68rem;padding:2px 8px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;transition:all 0.15s;flex-shrink:0;align-self:center}
+.sp-delete:hover{background:rgba(200,60,60,0.12);border-color:#c0392b}
 </style>
 </head>
 <body>
@@ -426,6 +436,8 @@ body{
     <button class="hd-btn" id="btn-music" title="Bật/tắt nhạc nền">🎵 Nhạc</button>
     <button class="hd-btn" id="btn-search-open">🔍 Tìm kiếm</button>
     <button class="hd-btn" id="btn-fab-hd">✍️ Viết trang mới</button>
+    <button class="hd-btn" id="btn-admin-open" title="Quản trị viên">🔐</button>
+    <button id="admin-badge" title="Admin đang hoạt động – Nhấn để thoát">🔐 Admin</button>
   </div>
 </div>
 
@@ -601,6 +613,18 @@ body{
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modal-admin-login">
+  <div class="modal-box" style="max-width:340px">
+    <button id="admin-modal-close" style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.1rem;cursor:pointer;color:#999">✕</button>
+    <div class="modal-title" style="font-size:1.5rem">🔐 Admin</div>
+    <p style="text-align:center;font-size:0.8rem;color:#7a94b8;font-family:'Be Vietnam Pro',sans-serif;margin-bottom:14px">Chỉ quản trị viên mới có quyền truy cập</p>
+    <div class="f-field"><label>Tên đăng nhập</label><input type="text" id="admin-user-input" placeholder="Username..." autocomplete="off" style="font-size:1rem;padding:8px 10px;background:rgba(255,255,255,0.85);border:1.5px solid rgba(130,170,220,0.4);border-radius:7px;width:100%;outline:none;font-family:'Be Vietnam Pro',sans-serif"></div>
+    <div class="f-field"><label>Mật khẩu</label><input type="password" id="admin-pw-input" placeholder="Password..." autocomplete="off" style="font-size:1rem;padding:8px 10px;background:rgba(255,255,255,0.85);border:1.5px solid rgba(130,170,220,0.4);border-radius:7px;width:100%;outline:none;font-family:'Be Vietnam Pro',sans-serif"></div>
+    <div class="pw-err" id="admin-err"></div>
+    <button id="btn-admin-ok" style="width:100%;padding:10px;margin-top:10px;background:linear-gradient(135deg,#c0392b,#922b21);color:#fff;border:none;border-radius:7px;font-family:'Dancing Script',cursive;font-size:1.2rem;font-weight:700;cursor:pointer;transition:all 0.2s">🔑 Đăng nhập</button>
+  </div>
+</div>
+
 <script>
 
 /* Firebase Config â€“ thay giá trị THAY_BANG_... bằng config thực của bạn */
@@ -618,7 +642,8 @@ var KEY = "mot_thoi_ae91_v3";
 var allEntries=[];var targetPageAfterSave=0;
 var PW = 400, PH = 566;
 var PHOTO_SRC, CAT_SRC, SVG_DECO, LTR_PH_SRC, LTR_K1_SRC, LTR_K2_SRC;
-var COVER_SRC, TPL9_SRC, TPL6_SRC;
+var COVER_SRC, TPL9_SRC, TPL6_SRC, TPL_SRC;
+var isAdminMode = false;
 
 var SAMPLES = [
   {id:"s1",name:"Phu huynh em Minh Khoa",role:"phu_huynh",
@@ -704,9 +729,7 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
 
   var ff    = getFontFamily(entry.font||"Caveat");
   var color = entry.color||"#1a2640";
-  // Odd pageIdx = LEFT page → TPL6_SRC (3.png, younger students)
-  // Even pageIdx = RIGHT page → TPL9_SRC (2.png, older students)
-  var tplSrc = (pageIdx !== undefined && pageIdx % 2 !== 0) ? TPL6_SRC : TPL9_SRC;
+  var tplSrc = TPL_SRC;
 
   // Segment text
   var rich = isRichContent(entry.content);
@@ -756,13 +779,14 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
     ? '<span style="font-size:0.6rem;color:#9ab;font-family:Be Vietnam Pro,sans-serif">\u2192 ti\u1EBFp</span>'
     : '';
 
-  var zoneClass = isCont ? "tpl-write-zone-cont" : "tpl-write-zone";
+  // Write zone top: cont pages start near top; first page w/ avatar needs space for avatar
+  var zoneTop = isCont ? "15px" : (entry.photoData ? "140px" : "68px");
 
   d.innerHTML =
     '<img class="tpl-bg" src="'+tplSrc+'" alt="bg"/>'+
     avatarHTML+
     nameHTML+
-    '<div class="'+zoneClass+'">'+
+    '<div class="tpl-write-zone" style="top:'+zoneTop+'">'+
       contLabel+
       '<div class="tpl-body" style="color:'+color+';font-family:'+ff+';font-size:'+(entry.size||"0.75rem")+'">'+
         (rich?pageText:esc(pageText).replace(/\n/g,"<br>"))+
@@ -971,10 +995,11 @@ function renderSearchList(filter){
   var html="";
   for(var i=0;i<filtered.length;i++){
     var e=filtered[i];
+    var delBtn=isAdminMode?'<button class="sp-delete" onclick="event.stopPropagation();confirmDelete(\''+e.id+'\',\''+esc(e.name)+'\')">🗑 Xóa</button>':"";
     html+='<div class="sp-item" data-eid="'+e.id+'" onclick="jumpToEntry(this.dataset.eid)">'+
       '<div class="sp-item-head">'+
         '<span class="sp-name" style="color:'+(e.color||"#1a2640")+';font-family:'+(e.font||"Caveat")+',cursive">'+esc(e.name)+'</span>'+
-        '<span class="role-badge '+roleCls(e.role)+'">'+roleLabel(e.role)+'</span>'+
+        '<span style="display:flex;align-items:center;gap:4px"><span class="role-badge '+roleCls(e.role)+'">'+roleLabel(e.role)+'</span>'+delBtn+'</span>'+
       '</div>'+
       '<div class="sp-preview">'+esc((e.content||"").substring(0,60))+'</div>'+
     '</div>';
@@ -987,6 +1012,60 @@ function jumpToEntry(id){
 }
 function openSearch(){document.getElementById("search-panel").classList.add("open");document.getElementById("sp-overlay").classList.add("open");renderSearchList(spFilter);}
 function closeSearch(){document.getElementById("search-panel").classList.remove("open");document.getElementById("sp-overlay").classList.remove("open");}
+
+// ── ADMIN ──
+var modalAdminLogin=document.getElementById("modal-admin-login");
+function openAdminLogin(){
+  document.getElementById("admin-user-input").value="";
+  document.getElementById("admin-pw-input").value="";
+  document.getElementById("admin-err").textContent="";
+  modalAdminLogin.classList.remove("hidden");
+  setTimeout(function(){document.getElementById("admin-user-input").focus();},100);
+}
+function setAdminMode(on){
+  isAdminMode=on;
+  document.getElementById("admin-badge").classList.toggle("show",on);
+  document.getElementById("btn-admin-open").style.display=on?"none":"";
+  renderSearchList(spFilter);
+}
+document.getElementById("btn-admin-open").addEventListener("click",openAdminLogin);
+document.getElementById("admin-badge").addEventListener("click",function(){
+  if(confirm("Thoát chế độ Admin?"))setAdminMode(false);
+});
+document.getElementById("admin-modal-close").addEventListener("click",function(){modalAdminLogin.classList.add("hidden");});
+modalAdminLogin.addEventListener("click",function(e){if(e.target===modalAdminLogin)modalAdminLogin.classList.add("hidden");});
+document.getElementById("btn-admin-ok").addEventListener("click",async function(){
+  var u=document.getElementById("admin-user-input").value.trim();
+  var p=document.getElementById("admin-pw-input").value;
+  var errEl=document.getElementById("admin-err");
+  var hu=await _sha(u);
+  var hp=await _sha(p);
+  if(hu===_HU&&hp===_H2){
+    errEl.textContent="";
+    modalAdminLogin.classList.add("hidden");
+    setAdminMode(true);
+    openSearch();
+    showToast("✅ Đã vào chế độ Admin");
+  }else{
+    errEl.textContent="❌ Sai tên đăng nhập hoặc mật khẩu!";
+    document.getElementById("admin-pw-input").value="";
+    document.getElementById("admin-pw-input").focus();
+  }
+});
+document.getElementById("admin-pw-input").addEventListener("keydown",function(e){
+  if(e.key==="Enter")document.getElementById("btn-admin-ok").click();
+});
+
+function confirmDelete(id,name){
+  if(!confirm("Xóa trang của \""+name+"\"?\nHành động này không thể hoàn tác!"))return;
+  if(!db){showToast("❌ Firebase chưa kết nối");return;}
+  db.ref(KEY+"/entries/"+id).remove().then(function(){
+    showToast("🗑 Đã xóa trang của "+name);
+  }).catch(function(err){
+    showToast("❌ Lỗi: "+err.message);
+  });
+}
+
 document.getElementById("btn-search-open").addEventListener("click",openSearch);
 document.getElementById("sp-close").addEventListener("click",closeSearch);
 document.getElementById("sp-overlay").addEventListener("click",closeSearch);
@@ -1060,11 +1139,18 @@ document.getElementById("btn-fab-hd").addEventListener("click",function(){
   setTimeout(function(){document.getElementById("f-pw").focus();},100);
 });
 modalPw.addEventListener("click",function(e){if(e.target===modalPw)modalPw.classList.add("hidden");});
-var CORRECT_PW="teamcoTra91";
-document.getElementById("btn-pw-ok").addEventListener("click",function(){
+var _H1="bb87ba2f30269e7a786c9f534ca3c46b4923aaf0bcad9280b32ceeed5c7c27ec";
+var _H2="e930aecda167d704ed0c671a1b0f71aa4037380819582effd65a0e4ab2a2d235";
+var _HU="566c24fd0cfbca0163c202d7b47823114c73c8af46df5718d9d109ab18054c3b";
+async function _sha(s){
+  var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(b)).map(function(x){return x.toString(16).padStart(2,"0");}).join("");
+}
+document.getElementById("btn-pw-ok").addEventListener("click",async function(){
   var pw=document.getElementById("f-pw").value;
   var errEl=document.getElementById("pw-err");
-  if(pw===CORRECT_PW){
+  var h=await _sha(pw);
+  if(h===_H1){
     errEl.textContent="";document.getElementById("f-pw").value="";
     modalPw.classList.add("hidden");modal.classList.remove("hidden");
   }else{
@@ -1286,6 +1372,7 @@ window.addEventListener("load",function(){
   LTR_K1_SRC = "data:image/jpeg;base64,"+document.getElementById("d-ltr-k1").textContent;
   LTR_K2_SRC  = "data:image/jpeg;base64,"+document.getElementById("d-ltr-k2").textContent;
   COVER_SRC   = "cover.jpg";
+  TPL_SRC     = "Template.png";
   TPL9_SRC    = "data:image/jpeg;base64,"+document.getElementById("d-tpl9").textContent;
   TPL6_SRC    = "data:image/jpeg;base64,"+document.getElementById("d-tpl6").textContent;
 
