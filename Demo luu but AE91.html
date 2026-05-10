@@ -257,14 +257,14 @@ body{
 /* Writing zone — strictly inside the red rectangle */
 .tpl-write-zone {
   position:absolute;z-index:2;
-  top:148px;left:18px;right:14px;bottom:105px;
-  overflow:hidden;
+  top:140px;left:18px;right:14px;bottom:105px;
+  overflow:hidden;min-height:0;
   display:flex;flex-direction:column;
 }
 .tpl-body {
-  font-size:1.0rem;line-height:1.82;
+  font-size:0.75rem;line-height:1.5;
   word-break:break-word;
-  flex:1;overflow:hidden;
+  flex:1;overflow:hidden;min-height:0;
 }
 .tpl-pg-footer {
   position:absolute;bottom:10px;left:14px;right:14px;
@@ -274,8 +274,8 @@ body{
 /* Continuation pages */
 .tpl-write-zone-cont {
   position:absolute;z-index:2;
-  top:148px;left:18px;right:14px;bottom:105px;
-  overflow:hidden;display:flex;flex-direction:column;
+  top:140px;left:18px;right:14px;bottom:105px;
+  overflow:hidden;min-height:0;display:flex;flex-direction:column;
 }
 
 /* Book spine shadow between pages */
@@ -710,7 +710,7 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
 
   // Segment text
   var rich = isRichContent(entry.content);
-  var CHARS = 28; var L_FIRST = 13; var L_CONT = 13;
+  var CHARS = 36; var L_FIRST = 17; var L_CONT = 17;
   var segs  = rich?[entry.content||""]:splitIntoSegments(entry.content||"", CHARS, L_FIRST, L_CONT);
   var pageText = segs[contIdx||0] || "";
   var hasMore   = !rich&&(contIdx||0) < segs.length - 1;
@@ -764,7 +764,7 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
     nameHTML+
     '<div class="'+zoneClass+'">'+
       contLabel+
-      '<div class="tpl-body" style="color:'+color+';font-family:'+ff+'">'+
+      '<div class="tpl-body" style="color:'+color+';font-family:'+ff+';font-size:'+(entry.size||"0.75rem")+'">'+
         (rich?pageText:esc(pageText).replace(/\n/g,"<br>"))+
       '</div>'+
     '</div>'+
@@ -908,7 +908,7 @@ function buildAndInit(startPage){
   for(var i=0;i<entries.length;i++){
     entryPageMap[entries[i].id]=pages.length;
     var ent=entries[i];
-    var segs=isRichContent(ent.content)?[ent.content||""]:splitIntoSegments(ent.content||"",28,13,13);
+    var segs=isRichContent(ent.content)?[ent.content||""]:splitIntoSegments(ent.content||"",36,17,17);
     for(var s=0;s<segs.length;s++){
       var pIdx=pages.length; // PASS absolute index to pick left/right template
       pages.push(mkTplPage(ent,i+1,s===0?undefined:s,pIdx));
@@ -1077,7 +1077,7 @@ document.getElementById("f-pw").addEventListener("keydown",function(e){
 });
 document.getElementById("modal-close").addEventListener("click",function(){modal.classList.add("hidden");});
 modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.add("hidden");});
-var selRole="phu_huynh",selEmo="\uD83D\uDC99",selColor="#1a2640",selFont="Roboto",selPhotoData=null;
+var selRole="phu_huynh",selEmo="\uD83D\uDC99",selColor="#1a2640",selFont="Roboto",selSize="0.75rem",selPhotoData=null;
 document.querySelectorAll(".role-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".role-btn").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selRole=b.dataset.role;});});
 document.querySelectorAll(".font-opt").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".font-opt").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selFont=b.dataset.font;document.getElementById("f-content").style.fontFamily=getFontFamily(selFont);});});
 document.querySelectorAll(".emo-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".emo-btn").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selEmo=b.dataset.emo;});});
@@ -1199,7 +1199,7 @@ document.getElementById("btn-submit").addEventListener("click",function(){
   var content=contentEl.innerHTML.trim();
   if(!name){alert("Vui long nhap ten!");return;}
   if(!contentEl.textContent.trim()){alert("Vui long viet noi dung!");return;}
-  var entry={id:Date.now().toString(),name:name,role:selRole,content:content,emotion:selEmo,color:selColor,font:selFont,timestamp:Date.now(),youtubeId:null,photoData:selPhotoData};
+  var entry={id:Date.now().toString(),name:name,role:selRole,content:content,emotion:selEmo,color:selColor,font:selFont,size:selSize,timestamp:Date.now(),youtubeId:null,photoData:selPhotoData};
   saveEntry(entry);
   targetPageAfterSave=allEntries.length+6;
   modal.classList.add("hidden");
@@ -1211,8 +1211,9 @@ document.getElementById("btn-submit").addEventListener("click",function(){
   document.querySelector(".emo-btn[data-emo='\uD83D\uDC99']").classList.add("active");
   document.querySelector(".color-btn[data-color='#1a2640']").classList.add("active");
   document.querySelector(".font-opt[data-font='Roboto']").classList.add("active");
-  contentEl.style.fontFamily="Roboto,sans-serif";
-  selRole="phu_huynh";selEmo="\uD83D\uDC99";selColor="#1a2640";selFont="Roboto";
+  contentEl.style.fontFamily="Roboto,sans-serif";contentEl.style.fontSize="1.0rem";
+  selRole="phu_huynh";selEmo="\uD83D\uDC99";selColor="#1a2640";selFont="Roboto";selSize="0.75rem";
+  document.querySelectorAll(".rte-size").forEach(function(x){x.classList.remove("rte-on");});
   /* Firebase listener sẽ tự rebuild sổ */
 });
 /* ── Rich Text Editor ── */
@@ -1224,11 +1225,14 @@ document.querySelectorAll(".rte-btn[data-cmd]").forEach(function(btn){
     document.execCommand(btn.dataset.cmd,false,null);
   });
 });
+var _sizeMap={"2":"0.78rem","3":"1.0rem","5":"1.3rem","6":"1.6rem"};
 document.querySelectorAll(".rte-size").forEach(function(btn){
   btn.addEventListener("mousedown",function(e){
     e.preventDefault();
-    rteEl.focus();
-    document.execCommand("fontSize",false,btn.dataset.size);
+    selSize=_sizeMap[btn.dataset.size]||"0.75rem";
+    rteEl.style.fontSize=selSize;
+    document.querySelectorAll(".rte-size").forEach(function(x){x.classList.remove("rte-on");});
+    btn.classList.add("rte-on");
   });
 });
 rteEl.addEventListener("paste",function(e){
