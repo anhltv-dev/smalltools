@@ -6,7 +6,7 @@
 <title>Một Thời AE 9.1 – Nam Từ Liêm</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Indie+Flower&family=Kalam:wght@400;700&family=Permanent+Marker&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Dancing+Script:wght@400;700&family=Pacifico&family=Indie+Flower&family=Kalam:wght@400;700&family=Permanent+Marker&family=Roboto:wght@400;700&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
@@ -195,6 +195,26 @@ body{
 .color-btn.active{border-color:#fff;box-shadow:0 0 0 2px var(--b400),0 1px 4px rgba(0,0,0,0.25)}
 #btn-submit{width:100%;padding:11px;margin-top:8px;background:linear-gradient(135deg,var(--b400),var(--b600));color:#fff;border:none;border-radius:7px;font-family:'Dancing Script',cursive;font-size:1.35rem;font-weight:700;cursor:pointer;transition:all 0.2s}
 #btn-submit:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(30,80,160,0.35)}
+/* RTE editor */
+.rte-wrap{border:1px solid rgba(130,170,220,0.4);border-radius:6px;overflow:hidden;background:rgba(255,255,255,0.78);transition:border-color 0.2s}
+.rte-wrap:focus-within{border-color:var(--b400)}
+.rte-toolbar{display:flex;gap:2px;padding:5px 6px;background:rgba(237,245,252,0.95);border-bottom:1px solid rgba(130,170,220,0.25);flex-wrap:wrap;align-items:center}
+.rte-btn{min-width:26px;height:25px;padding:0 3px;background:none;border:1px solid transparent;border-radius:4px;cursor:pointer;font-size:0.82rem;color:#556;display:inline-flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.rte-btn:hover{background:rgba(61,150,220,0.15);border-color:rgba(61,150,220,0.3)}
+.rte-btn.rte-on{background:rgba(61,150,220,0.18);border-color:var(--b400);color:var(--b600)}
+.rte-sep{width:1px;height:16px;background:rgba(130,170,220,0.4);margin:0 2px;flex-shrink:0;display:inline-block;align-self:center}
+.rte-editor{width:100%;min-height:100px;max-height:210px;padding:7px 10px;font-size:1.1rem;color:var(--ink);outline:none;line-height:1.7;overflow-y:auto;word-break:break-word}
+.rte-editor:empty::before{content:attr(placeholder);color:#b0bdcc;pointer-events:none;display:block}
+.rte-editor img{max-width:100%;border-radius:4px;margin:2px 0;display:inline-block;vertical-align:middle}
+.rte-editor ul,.rte-editor ol{padding-left:18px}
+.rte-editor li{margin:1px 0}
+/* Emoji grid scrollable */
+.emo-grid{display:flex;gap:5px;flex-wrap:wrap;max-height:174px;overflow-y:auto;padding:2px 2px 4px}
+.emo-grid::-webkit-scrollbar{width:3px}
+.emo-grid::-webkit-scrollbar-thumb{background:rgba(61,150,220,0.3);border-radius:2px}
+/* Preview modal */
+#btn-preview-back{width:100%;padding:10px;margin-top:10px;background:rgba(200,200,220,0.2);border:1px solid rgba(130,170,220,0.4);border-radius:7px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;font-size:0.9rem;color:#556;transition:all 0.2s}
+#btn-preview-back:hover{background:rgba(61,150,220,0.1);border-color:var(--b400);color:var(--b600)}
 
 
 /* TEMPLATE WRITING PAGES */
@@ -462,14 +482,35 @@ body{
       <button class="role-btn a-gv" data-role="giao_vien">📚 Thầy / Cô</button>
     </div></div>
     <div class="f-field"><label>Chọn kiểu chữ</label><div class="font-picker">
-      <button class="font-opt active" data-font="Caveat" style="font-family:Caveat">Chữ thường</button>
+      <button class="font-opt active" data-font="Roboto" style="font-family:Roboto,sans-serif">Roboto</button>
       <button class="font-opt" data-font="Dancing Script" style="font-family:'Dancing Script'">Chữ hoa</button>
       <button class="font-opt" data-font="Pacifico" style="font-family:Pacifico">Tròn đẹp</button>
       <button class="font-opt" data-font="Indie Flower" style="font-family:'Indie Flower'">Dễ thương</button>
       <button class="font-opt" data-font="Kalam" style="font-family:Kalam">Mềm mại</button>
       <button class="font-opt" data-font="Permanent Marker" style="font-family:'Permanent Marker'">Marker</button>
     </div></div>
-    <div class="f-field"><label>Nội dung *</label><textarea id="f-content" placeholder="Hãy viết điều bạn muốn gửi gắm..." style="font-family:Caveat,cursive;font-size:1.15rem"></textarea></div>
+    <div class="f-field"><label>Nội dung *</label>
+      <div class="rte-wrap">
+        <div class="rte-toolbar" id="rte-toolbar">
+          <button class="rte-btn" data-cmd="bold" title="In đậm"><b>B</b></button>
+          <button class="rte-btn" data-cmd="italic" title="Nghiêng"><i>I</i></button>
+          <button class="rte-btn" data-cmd="underline" title="Gạch dưới"><u>U</u></button>
+          <span class="rte-sep"></span>
+          <button class="rte-btn" data-cmd="justifyLeft" title="Căn trái">&#8592;</button>
+          <button class="rte-btn" data-cmd="justifyCenter" title="Căn giữa">&#8660;</button>
+          <button class="rte-btn" data-cmd="justifyRight" title="Căn phải">&#8594;</button>
+          <span class="rte-sep"></span>
+          <button class="rte-btn" data-cmd="insertUnorderedList" title="Danh sách">&#8226;&#8801;</button>
+          <button class="rte-btn" data-cmd="insertOrderedList" title="Đánh số">1&#8801;</button>
+          <span class="rte-sep"></span>
+          <button class="rte-btn rte-size" data-size="2" title="Chữ nhỏ" style="font-size:0.7rem">S</button>
+          <button class="rte-btn rte-size" data-size="3" title="Chữ vừa" style="font-size:0.82rem">M</button>
+          <button class="rte-btn rte-size" data-size="5" title="Chữ lớn" style="font-size:0.95rem;font-weight:600">L</button>
+          <button class="rte-btn rte-size" data-size="6" title="Chữ rất lớn" style="font-size:1.05rem;font-weight:700">XL</button>
+        </div>
+        <div contenteditable="true" id="f-content" class="rte-editor" placeholder="Hãy viết điều bạn muốn gửi gắm..." style="font-family:Roboto,sans-serif"></div>
+      </div>
+    </div>
     <div class="f-field"><label>📷 Ảnh đại diện (không bắt buộc)</label>
       <div class="photo-upload-area" id="photo-drop-area" onclick="document.getElementById('f-photo').click()">
         <div class="photo-upload-label">📷 Nhấn để chọn ảnh – kéo để chỉnh khuôn mặt</div>
@@ -488,16 +529,52 @@ body{
       </div>
     </div>
     <div class="f-field"><label>Cảm xúc</label><div class="emo-grid">
-      <button class="emo-btn active" data-emo="🙏">🙏</button>
-      <button class="emo-btn" data-emo="💙">💙</button>
-      <button class="emo-btn" data-emo="🌸">🌸</button>
+      <button class="emo-btn active" data-emo="💙">💙</button>
       <button class="emo-btn" data-emo="😊">😊</button>
-      <button class="emo-btn" data-emo="🎉">🎉</button>
-      <button class="emo-btn" data-emo="😰">😰</button>
-      <button class="emo-btn" data-emo="🥺">🥺</button>
-      <button class="emo-btn" data-emo="✨">✨</button>
+      <button class="emo-btn" data-emo="😄">😄</button>
+      <button class="emo-btn" data-emo="😍">😍</button>
+      <button class="emo-btn" data-emo="🥰">🥰</button>
+      <button class="emo-btn" data-emo="😘">😘</button>
+      <button class="emo-btn" data-emo="🤩">🤩</button>
+      <button class="emo-btn" data-emo="😎">😎</button>
+      <button class="emo-btn" data-emo="🤗">🤗</button>
+      <button class="emo-btn" data-emo="😂">😂</button>
+      <button class="emo-btn" data-emo="🥹">🥹</button>
+      <button class="emo-btn" data-emo="🥲">🥲</button>
+      <button class="emo-btn" data-emo="😇">😇</button>
       <button class="emo-btn" data-emo="❤️">❤️</button>
+      <button class="emo-btn" data-emo="💚">💚</button>
+      <button class="emo-btn" data-emo="💛">💛</button>
+      <button class="emo-btn" data-emo="💜">💜</button>
+      <button class="emo-btn" data-emo="💖">💖</button>
+      <button class="emo-btn" data-emo="🧡">🧡</button>
+      <button class="emo-btn" data-emo="🤍">🤍</button>
+      <button class="emo-btn" data-emo="💕">💕</button>
+      <button class="emo-btn" data-emo="🫶">🫶</button>
+      <button class="emo-btn" data-emo="💝">💝</button>
+      <button class="emo-btn" data-emo="🌸">🌸</button>
+      <button class="emo-btn" data-emo="🌺">🌺</button>
+      <button class="emo-btn" data-emo="🌻">🌻</button>
+      <button class="emo-btn" data-emo="🌷">🌷</button>
+      <button class="emo-btn" data-emo="🌈">🌈</button>
+      <button class="emo-btn" data-emo="✨">✨</button>
       <button class="emo-btn" data-emo="🌟">🌟</button>
+      <button class="emo-btn" data-emo="⭐">⭐</button>
+      <button class="emo-btn" data-emo="🦋">🦋</button>
+      <button class="emo-btn" data-emo="🌙">🌙</button>
+      <button class="emo-btn" data-emo="🍀">🍀</button>
+      <button class="emo-btn" data-emo="🎉">🎉</button>
+      <button class="emo-btn" data-emo="🎊">🎊</button>
+      <button class="emo-btn" data-emo="🎓">🎓</button>
+      <button class="emo-btn" data-emo="📚">📚</button>
+      <button class="emo-btn" data-emo="🎶">🎶</button>
+      <button class="emo-btn" data-emo="🎨">🎨</button>
+      <button class="emo-btn" data-emo="🏆">🏆</button>
+      <button class="emo-btn" data-emo="🎁">🎁</button>
+      <button class="emo-btn" data-emo="🌊">🌊</button>
+      <button class="emo-btn" data-emo="🥺">🥺</button>
+      <button class="emo-btn" data-emo="😢">😢</button>
+      <button class="emo-btn" data-emo="😰">😰</button>
     </div></div>
 <div class="f-field"><label>🖊️ Màu mực</label><div class="color-row">
       <button class="color-btn active" data-color="#1a2640" style="background:#1a2640"></button>
@@ -508,7 +585,19 @@ body{
       <button class="color-btn" data-color="#8b2020" style="background:#8b2020"></button>
       <button class="color-btn" data-color="#7a4a10" style="background:#7a4a10"></button>
     </div></div>
-    <button id="btn-submit">💾 Lưu vào sổ</button>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button id="btn-preview" style="flex:1;padding:11px;background:rgba(255,255,255,0.7);border:1.5px solid rgba(130,170,220,0.5);border-radius:7px;color:var(--b600);font-family:'Be Vietnam Pro',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.2s">👁️ Xem trước</button>
+      <button id="btn-submit" style="flex:2;width:auto;margin-top:0">💾 Lưu vào sổ</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-preview">
+  <div class="modal-box" style="max-width:460px;text-align:center">
+    <button id="preview-close" style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.1rem;cursor:pointer;color:#999">✕</button>
+    <div class="modal-title">👁️ Xem trước bài viết</div>
+    <div id="preview-page-wrap" style="display:flex;justify-content:center;padding:6px 0;transform-origin:top center"></div>
+    <button id="btn-preview-back">&#8592; Quay lại sửa tiếp</button>
   </div>
 </div>
 
@@ -560,6 +649,8 @@ function ytId(u){
 function fmtDate(ts){return new Date(ts).toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit",year:"numeric"});}
 function roleLabel(r){return{phu_huynh:"Phu Huynh",hoc_sinh:"Hoc Sinh",giao_vien:"Thay / Co"}[r]||r;}
 function roleCls(r){return{phu_huynh:"r-ph",hoc_sinh:"r-hs",giao_vien:"r-gv"}[r]||"";}
+function getFontFamily(f){return f==="Roboto"?f+",sans-serif":(f||"Caveat")+",cursive";}
+function isRichContent(s){return/<[a-zA-Z]/.test(s||"");}
 function esc(t){
   return(t||"").replace(/[&<>"']/g,function(c){
     return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c];
@@ -611,17 +702,18 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
   d.style.cssText = "width:"+PW+"px;height:"+PH+"px";
   d.dataset.entryId = entry.id;
 
-  var ff    = (entry.font||"Caveat")+",cursive";
+  var ff    = getFontFamily(entry.font||"Caveat");
   var color = entry.color||"#1a2640";
   // Odd pageIdx = LEFT page → TPL6_SRC (3.png, younger students)
   // Even pageIdx = RIGHT page → TPL9_SRC (2.png, older students)
   var tplSrc = (pageIdx !== undefined && pageIdx % 2 !== 0) ? TPL6_SRC : TPL9_SRC;
 
   // Segment text
+  var rich = isRichContent(entry.content);
   var CHARS = 28; var L_FIRST = 13; var L_CONT = 13;
-  var segs  = splitIntoSegments(entry.content||"", CHARS, L_FIRST, L_CONT);
+  var segs  = rich?[entry.content||""]:splitIntoSegments(entry.content||"", CHARS, L_FIRST, L_CONT);
   var pageText = segs[contIdx||0] || "";
-  var hasMore   = (contIdx||0) < segs.length - 1;
+  var hasMore   = !rich&&(contIdx||0) < segs.length - 1;
 
   // Avatar
   var avatarHTML = "";
@@ -673,7 +765,7 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
     '<div class="'+zoneClass+'">'+
       contLabel+
       '<div class="tpl-body" style="color:'+color+';font-family:'+ff+'">'+
-        esc(pageText).replace(/\n/g,"<br>")+
+        (rich?pageText:esc(pageText).replace(/\n/g,"<br>"))+
       '</div>'+
     '</div>'+
     '<div class="tpl-pg-footer">'+
@@ -816,7 +908,7 @@ function buildAndInit(startPage){
   for(var i=0;i<entries.length;i++){
     entryPageMap[entries[i].id]=pages.length;
     var ent=entries[i];
-    var segs=splitIntoSegments(ent.content||"",28,13,13);
+    var segs=isRichContent(ent.content)?[ent.content||""]:splitIntoSegments(ent.content||"",28,13,13);
     for(var s=0;s<segs.length;s++){
       var pIdx=pages.length; // PASS absolute index to pick left/right template
       pages.push(mkTplPage(ent,i+1,s===0?undefined:s,pIdx));
@@ -985,9 +1077,9 @@ document.getElementById("f-pw").addEventListener("keydown",function(e){
 });
 document.getElementById("modal-close").addEventListener("click",function(){modal.classList.add("hidden");});
 modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.add("hidden");});
-var selRole="phu_huynh",selEmo="\uD83D\uDE4F",selColor="#1a2640",selFont="Caveat",selPhotoData=null;
+var selRole="phu_huynh",selEmo="\uD83D\uDC99",selColor="#1a2640",selFont="Roboto",selPhotoData=null;
 document.querySelectorAll(".role-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".role-btn").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selRole=b.dataset.role;});});
-document.querySelectorAll(".font-opt").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".font-opt").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selFont=b.dataset.font;document.getElementById("f-content").style.fontFamily=selFont+",cursive";});});
+document.querySelectorAll(".font-opt").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".font-opt").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selFont=b.dataset.font;document.getElementById("f-content").style.fontFamily=getFontFamily(selFont);});});
 document.querySelectorAll(".emo-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".emo-btn").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selEmo=b.dataset.emo;});});
 document.querySelectorAll(".color-btn").forEach(function(b){b.addEventListener("click",function(){document.querySelectorAll(".color-btn").forEach(function(x){x.classList.remove("active");});b.classList.add("active");selColor=b.dataset.color;});});
 // ── Avatar crop tool ──
@@ -1103,25 +1195,84 @@ document.getElementById("avatar-crop-cancel").addEventListener("click",function(
 });
 document.getElementById("btn-submit").addEventListener("click",function(){
   var name=document.getElementById("f-name").value.trim();
-  var content=document.getElementById("f-content").value.trim();
+  var contentEl=document.getElementById("f-content");
+  var content=contentEl.innerHTML.trim();
   if(!name){alert("Vui long nhap ten!");return;}
-  if(!content){alert("Vui long viet noi dung!");return;}
+  if(!contentEl.textContent.trim()){alert("Vui long viet noi dung!");return;}
   var entry={id:Date.now().toString(),name:name,role:selRole,content:content,emotion:selEmo,color:selColor,font:selFont,timestamp:Date.now(),youtubeId:null,photoData:selPhotoData};
   saveEntry(entry);
   targetPageAfterSave=allEntries.length+6;
   modal.classList.add("hidden");
   showToast("\u2713 \u0110\xE3 l\u01B0u v\xE0o s\u1ED5 th\xE0nh c\xF4ng!");
-  document.getElementById("f-name").value="";document.getElementById("f-content").value="";
+  document.getElementById("f-name").value="";contentEl.innerHTML="";
   document.getElementById("photo-preview").style.display="none";document.getElementById("f-photo").value="";selPhotoData=null;
   document.querySelectorAll(".role-btn,.emo-btn,.color-btn,.font-opt").forEach(function(x){x.classList.remove("active");});
   document.querySelector(".role-btn[data-role='phu_huynh']").classList.add("active");
-  document.querySelector(".emo-btn[data-emo='\uD83D\uDE4F']").classList.add("active");
+  document.querySelector(".emo-btn[data-emo='\uD83D\uDC99']").classList.add("active");
   document.querySelector(".color-btn[data-color='#1a2640']").classList.add("active");
-  document.querySelector(".font-opt[data-font='Caveat']").classList.add("active");
-  document.getElementById("f-content").style.fontFamily="Caveat,cursive";
-  selRole="phu_huynh";selEmo="\uD83D\uDE4F";selColor="#1a2640";selFont="Caveat";
+  document.querySelector(".font-opt[data-font='Roboto']").classList.add("active");
+  contentEl.style.fontFamily="Roboto,sans-serif";
+  selRole="phu_huynh";selEmo="\uD83D\uDC99";selColor="#1a2640";selFont="Roboto";
   /* Firebase listener sẽ tự rebuild sổ */
 });
+/* ── Rich Text Editor ── */
+var rteEl=document.getElementById("f-content");
+document.querySelectorAll(".rte-btn[data-cmd]").forEach(function(btn){
+  btn.addEventListener("mousedown",function(e){
+    e.preventDefault();
+    rteEl.focus();
+    document.execCommand(btn.dataset.cmd,false,null);
+  });
+});
+document.querySelectorAll(".rte-size").forEach(function(btn){
+  btn.addEventListener("mousedown",function(e){
+    e.preventDefault();
+    rteEl.focus();
+    document.execCommand("fontSize",false,btn.dataset.size);
+  });
+});
+rteEl.addEventListener("paste",function(e){
+  var items=(e.clipboardData||window.clipboardData||{}).items||[];
+  for(var i=0;i<items.length;i++){
+    if(items[i].type.indexOf("image")!==-1){
+      e.preventDefault();
+      var blob=items[i].getAsFile();
+      var fr=new FileReader();
+      fr.onload=function(ev){
+        var img=new Image();
+        img.onload=function(){
+          var c=document.createElement("canvas");
+          var r=Math.min(280/img.width,280/img.height,1);
+          c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+          c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+          document.execCommand("insertHTML",false,'<img src="'+c.toDataURL("image/jpeg",0.75)+'" style="max-width:100%;border-radius:4px;margin:2px 0">');
+        };
+        img.src=ev.target.result;
+      };
+      fr.readAsDataURL(blob);
+      return;
+    }
+  }
+});
+/* ── Preview ── */
+var modalPreview=document.getElementById("modal-preview");
+document.getElementById("btn-preview").addEventListener("click",function(){
+  var name=document.getElementById("f-name").value.trim()||"T\xEAn của bạn";
+  var content=rteEl.innerHTML.trim();
+  if(!rteEl.textContent.trim())content="<i style='color:#aaa'>Chưa c\xF3 nội dung...</i>";
+  var tempEntry={id:"prev",name:name,role:selRole,content:content,emotion:selEmo,color:selColor,font:selFont,timestamp:Date.now(),photoData:selPhotoData};
+  var wrap=document.getElementById("preview-page-wrap");
+  wrap.innerHTML="";
+  var pg=mkTplPage(tempEntry,1,undefined,0);
+  var scale=Math.min(1,(wrap.offsetWidth||400)/PW);
+  pg.style.transform="scale("+scale+")";pg.style.transformOrigin="top left";
+  wrap.style.height=Math.round(PH*scale)+"px";
+  wrap.appendChild(pg);
+  modalPreview.classList.remove("hidden");
+});
+document.getElementById("preview-close").addEventListener("click",function(){modalPreview.classList.add("hidden");});
+document.getElementById("btn-preview-back").addEventListener("click",function(){modalPreview.classList.add("hidden");});
+modalPreview.addEventListener("click",function(e){if(e.target===modalPreview)modalPreview.classList.add("hidden");});
 function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},3000);}
 window.addEventListener("load",function(){
   PHOTO_SRC  = "data:image/jpeg;base64,"+document.getElementById("d-photo").textContent;
