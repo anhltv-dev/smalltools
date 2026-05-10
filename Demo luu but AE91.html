@@ -793,7 +793,7 @@ function mkBlankPage(){
   var d=document.createElement("div");
   d.className="page page-tpl";
   d.style.cssText="width:"+PW+"px;height:"+PH+"px";
-  d.innerHTML='<img class="tpl-bg" src="'+TPL9_SRC+'" alt="bg"/>';
+  d.innerHTML='<img class="tpl-bg" src="'+TPL_SRC+'" alt="bg"/>';
   return d;
 }
 
@@ -931,11 +931,10 @@ function buildAndInit(startPage){
   if(pages.length%2===0){
     // even → next would be RIGHT → add blank LEFT page first
     var bIdx=pages.length;
-    var bSrc=TPL6_SRC; // left template for blank
     var bDiv=document.createElement("div");
     bDiv.className="page page-tpl";
     bDiv.style.cssText="width:"+PW+"px;height:"+PH+"px";
-    bDiv.innerHTML='<img class="tpl-bg" src="'+bSrc+'" alt="bg"/>';
+    bDiv.innerHTML='<img class="tpl-bg" src="'+TPL_SRC+'" alt="bg"/>';
     pages.push(bDiv);
   }
   pages.push(mkRosterPage());  // roster on LEFT
