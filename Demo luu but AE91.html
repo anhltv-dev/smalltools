@@ -645,18 +645,6 @@ var PHOTO_SRC, CAT_SRC, SVG_DECO, LTR_PH_SRC, LTR_K1_SRC, LTR_K2_SRC;
 var COVER_SRC, TPL9_SRC, TPL6_SRC, TPL_SRC;
 var isAdminMode = false;
 
-var SAMPLES = [
-  {id:"s1",name:"Phu huynh em Minh Khoa",role:"phu_huynh",
-   content:"Kinh gui co Huong Tra yeu quy,\n\nCam on co da tan tuy cham lo cho cac con suot nhung nam hoc qua.",
-   emotion:"\uD83D\uDE4F",color:"#0d3e6e",font:"Caveat",timestamp:0,youtubeId:null,photoData:null},
-  {id:"s2",name:"Tran Minh Khoa",role:"hoc_sinh",
-   content:"Con cam on co da luon kien nhan va yeu thuong bon con! Nhung bai hoc cua co se la hanh trang con mang theo mai.",
-   emotion:"\uD83D\uDC99",color:"#1a68b0",font:"Dancing Script",timestamp:0,youtubeId:null,photoData:null},
-  {id:"s3",name:"Le Thi Thu Ha",role:"hoc_sinh",
-   content:"Co oi con rat nho nhung buoi hoc co hay ke chuyen vui! Mot thoi AE 9.1 mai nho co Huong Tra!",
-   emotion:"\uD83C\uDF38",color:"#6228a0",font:"Caveat",timestamp:0,youtubeId:null,photoData:null}
-];
-SAMPLES.forEach(function(s){if(!s.timestamp)s.timestamp=Date.now()-86400000*3;});
 
 function loadEntries(){ return allEntries; }
 function saveEntry(entry){
@@ -912,7 +900,6 @@ function buildAndInit(startPage){
   var bookEl=document.getElementById("book");
   bookEl.innerHTML="";entryPageMap={};
   var entries=loadEntries();
-  if(!entries.length)entries=SAMPLES;
   document.getElementById("hd-sub-info").textContent=
     "AE 9.1 \u00B7 THCS Nam T\u1EEB Li\xEAm \u00B7 2022\u20132026 \u00B7 "+entries.length+" trang";
 
@@ -989,7 +976,7 @@ var spFilter="all";
 function renderSearchList(filter){
   spFilter=filter;
   var list=document.getElementById("sp-list");
-  var entries=loadEntries().length>0?loadEntries():SAMPLES;
+  var entries=loadEntries();
   var filtered=filter==="all"?entries:entries.filter(function(e){return e.role===filter;});
   if(!filtered.length){list.innerHTML='<div class="sp-empty">Chua co trang nao.</div>';return;}
   var html="";
