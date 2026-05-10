@@ -726,27 +726,19 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
   var pageText = segs[contIdx||0] || "";
   var hasMore   = !rich&&(contIdx||0) < segs.length - 1;
 
-  // Avatar
+  // Avatar \u2014 only render when photo exists (empty circle blocks content)
   var avatarHTML = "";
-  if(!isCont){
-    if(entry.photoData){
-      avatarHTML =
-        '<div class="tpl-avatar">'+
-          '<img src="'+entry.photoData+'" alt="avatar"/>'+
-        '</div>';
-    } else {
-      avatarHTML =
-        '<div class="tpl-avatar">'+
-          '<span class="tpl-avatar-empty">\uD83D\uDE0A</span>'+
-        '</div>';
-    }
+  if(!isCont && entry.photoData){
+    avatarHTML =
+      '<div class="tpl-avatar">'+
+        '<img src="'+entry.photoData+'" alt="avatar"/>'+
+      '</div>';
   }
 
   // Name block (only on first page)
   var nameHTML = "";
   if(!isCont){
-    // If no avatar, name starts beside cat logo. If avatar, name starts after avatar.
-    var nameLeft = entry.photoData ? '272px' : '160px';
+    var nameLeft = entry.photoData ? '272px' : '18px';
     nameHTML =
       '<div class="tpl-name-block" style="left:'+nameLeft+'">'+
         '<span class="tpl-author" style="color:'+color+';font-family:'+ff+'">'+esc(entry.name)+'</span>'+
@@ -915,8 +907,7 @@ function buildAndInit(startPage){
   pages.push(mkFixedImgPage(LTR_PH_SRC));  // 2: letter to parents
   pages.push(mkFixedImgPage(LTR_K1_SRC));  // 3: letter to students p1
   pages.push(mkFixedImgPage(LTR_K2_SRC));  // 4: letter to students p2
-  pages.push(mkBlankPage());               // 5: blank (tpl9, even=right)
-  // User entries — pass ABSOLUTE page index so left/right template is correct
+  // User entries start at index 5 (odd = LEFT page)
   for(var i=0;i<entries.length;i++){
     entryPageMap[entries[i].id]=pages.length;
     var ent=entries[i];
