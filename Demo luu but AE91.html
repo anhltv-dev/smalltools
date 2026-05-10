@@ -772,6 +772,7 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
 
   d.innerHTML =
     '<img class="tpl-bg" src="'+tplSrc+'" alt="bg"/>'+
+    '<div style="position:absolute;inset:0;background:rgba(255,255,255,0.32);z-index:1;pointer-events:none"></div>'+
     avatarHTML+
     nameHTML+
     '<div class="tpl-write-zone" style="top:'+zoneTop+'">'+
