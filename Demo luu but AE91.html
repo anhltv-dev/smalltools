@@ -279,6 +279,7 @@ body{
   word-break:break-word;
   flex:1;overflow:hidden;min-height:0;
 }
+.tpl-body img{max-width:100%;height:auto;display:block;margin:2px 0;border-radius:4px}
 .tpl-pg-footer {
   position:absolute;bottom:10px;left:14px;right:14px;
   display:flex;justify-content:space-between;align-items:center;
@@ -784,6 +785,19 @@ function mkTplPage(entry, num, contIdx, pageIdx) {
   var segs  = rich?[entry.content||""]:splitIntoSegments(entry.content||"", CHARS, L_FIRST, L_CONT);
   var pageText = segs[contIdx||0] || "";
   var hasMore   = !rich&&(contIdx||0) < segs.length - 1;
+
+  // Preprocess images in rich content: constrain height to keep text visible
+  if(rich && pageText){
+    var textOnly=pageText.replace(/<img[^>]*>/gi,"").replace(/<[^>]+>/g,"").replace(/&[a-z#0-9]+;/gi," ").trim();
+    var hasText=textOnly.length>3;
+    // Zone heights: isCont→446px, with avatar→321px, no avatar→393px
+    var zoneH=isCont?446:(entry.photoData?321:393);
+    var maxH=hasText?Math.round(zoneH*0.58):Math.round(zoneH*0.92);
+    pageText=pageText.replace(/<img([^>]*?)>/gi,function(m,attrs){
+      attrs=attrs.replace(/\s*style="[^"]*"/i,"");
+      return '<img'+attrs+' style="max-width:100%;height:auto;display:block;max-height:'+maxH+'px;margin:2px 0;border-radius:4px">';
+    });
+  }
 
   // Avatar \u2014 only render when photo exists (empty circle blocks content)
   var avatarHTML = "";
@@ -1462,7 +1476,7 @@ rteEl.addEventListener("paste",function(e){
           c.getContext("2d").drawImage(img,0,0,c.width,c.height);
           var webpTest=c.toDataURL("image/webp",0.1);
           var fmt=webpTest.indexOf("image/webp")>-1?"image/webp":"image/jpeg";
-          document.execCommand("insertHTML",false,'<img src="'+c.toDataURL(fmt,0.82)+'" style="max-width:100%;border-radius:4px;margin:2px 0">');
+          document.execCommand("insertHTML",false,'<img src="'+c.toDataURL(fmt,0.82)+'" style="max-width:100%;height:auto;display:block;border-radius:4px;margin:4px 0">');
         };
         img.src=ev.target.result;
       };
