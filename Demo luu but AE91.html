@@ -790,17 +790,11 @@ function mkBlankPage(){
 }
 
 function mkBackCover(){
-  var d=document.createElement("div");d.className="page page-cover-back";
-  d.setAttribute("data-density","hard");d.style.cssText="width:"+PW+"px;height:"+PH+"px";
-  d.innerHTML=
-    SVG_DECO+
-    '<div class="cv-border"></div>'+
-    '<div class="back-inner">'+
-      '<div class="back-orn">\u2746 \u273F \u2746</div>'+
-      '<div class="back-quote">"\u201CNgh\u1EC1 d\u1EA1y h\u1ECDc \u2014 ngh\u1EC1 cao qu\xFD<br>nh\u1EA5t trong nh\u1EEFng ngh\u1EC1 cao qu\xFD.\u201D"</div>'+
-      '<div class="back-orn">\u2766</div>'+
-      '<div class="back-cls">AE 9.1 \u00B7 Ni\xEAn kh\xF3a 2022 \u2013 2026</div>'+
-    '</div>';
+  var d=document.createElement("div");
+  d.className="page page-fixed-img";
+  d.setAttribute("data-density","hard");
+  d.style.cssText="width:"+PW+"px;height:"+PH+"px";
+  d.innerHTML='<img src="end.png" alt="bia sau" style="width:100%;height:100%;object-fit:fill;display:block"/>';
   return d;
 }
 
