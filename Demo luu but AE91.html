@@ -587,6 +587,48 @@ body{
       <button class="emo-btn" data-emo="🥺">🥺</button>
       <button class="emo-btn" data-emo="😢">😢</button>
       <button class="emo-btn" data-emo="😰">😰</button>
+      <button class="emo-btn" data-emo="😭">😭</button>
+      <button class="emo-btn" data-emo="😤">😤</button>
+      <button class="emo-btn" data-emo="😑">😑</button>
+      <button class="emo-btn" data-emo="🙃">🙃</button>
+      <button class="emo-btn" data-emo="😅">😅</button>
+      <button class="emo-btn" data-emo="🤣">🤣</button>
+      <button class="emo-btn" data-emo="🥳">🥳</button>
+      <button class="emo-btn" data-emo="🤔">🤔</button>
+      <button class="emo-btn" data-emo="🤭">🤭</button>
+      <button class="emo-btn" data-emo="🫢">🫢</button>
+      <button class="emo-btn" data-emo="😌">😌</button>
+      <button class="emo-btn" data-emo="😴">😴</button>
+      <button class="emo-btn" data-emo="🫠">🫠</button>
+      <button class="emo-btn" data-emo="👋">👋</button>
+      <button class="emo-btn" data-emo="👍">👍</button>
+      <button class="emo-btn" data-emo="💪">💪</button>
+      <button class="emo-btn" data-emo="🙏">🙏</button>
+      <button class="emo-btn" data-emo="✌️">✌️</button>
+      <button class="emo-btn" data-emo="🫂">🫂</button>
+      <button class="emo-btn" data-emo="🐱">🐱</button>
+      <button class="emo-btn" data-emo="🐶">🐶</button>
+      <button class="emo-btn" data-emo="🐼">🐼</button>
+      <button class="emo-btn" data-emo="🦄">🦄</button>
+      <button class="emo-btn" data-emo="🦊">🦊</button>
+      <button class="emo-btn" data-emo="🐸">🐸</button>
+      <button class="emo-btn" data-emo="🧋">🧋</button>
+      <button class="emo-btn" data-emo="🍦">🍦</button>
+      <button class="emo-btn" data-emo="🍰">🍰</button>
+      <button class="emo-btn" data-emo="🍕">🍕</button>
+      <button class="emo-btn" data-emo="🍜">🍜</button>
+      <button class="emo-btn" data-emo="⚽">⚽</button>
+      <button class="emo-btn" data-emo="🏀">🏀</button>
+      <button class="emo-btn" data-emo="🎮">🎮</button>
+      <button class="emo-btn" data-emo="🎸">🎸</button>
+      <button class="emo-btn" data-emo="🚀">🚀</button>
+      <button class="emo-btn" data-emo="✏️">✏️</button>
+      <button class="emo-btn" data-emo="💡">💡</button>
+      <button class="emo-btn" data-emo="🔥">🔥</button>
+      <button class="emo-btn" data-emo="⚡">⚡</button>
+      <button class="emo-btn" data-emo="🌹">🌹</button>
+      <button class="emo-btn" data-emo="☀️">☀️</button>
+      <button class="emo-btn" data-emo="❄️">❄️</button>
     </div></div>
 <div class="f-field"><label>🖊️ Màu mực</label><div class="color-row">
       <button class="color-btn active" data-color="#1a2640" style="background:#1a2640"></button>
@@ -1304,10 +1346,12 @@ rteEl.addEventListener("paste",function(e){
         var img=new Image();
         img.onload=function(){
           var c=document.createElement("canvas");
-          var r=Math.min(280/img.width,280/img.height,1);
+          var r=Math.min(900/img.width,900/img.height,1);
           c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
           c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-          document.execCommand("insertHTML",false,'<img src="'+c.toDataURL("image/jpeg",0.75)+'" style="max-width:100%;border-radius:4px;margin:2px 0">');
+          var webpTest=c.toDataURL("image/webp",0.1);
+          var fmt=webpTest.indexOf("image/webp")>-1?"image/webp":"image/jpeg";
+          document.execCommand("insertHTML",false,'<img src="'+c.toDataURL(fmt,0.82)+'" style="max-width:100%;border-radius:4px;margin:2px 0">');
         };
         img.src=ev.target.result;
       };
